@@ -26,7 +26,7 @@ app.add_middleware(
 )
 
 RUNNER_URL = os.getenv("RUNNER_URL", "http://127.0.0.1:5001/run")
-BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://172.31.9.80:8000") # EC2-1 App Tier
+BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://127.0.0.1:8000") # Bridged tunnel or direct VPC
 
 scheduler = BackgroundScheduler()
 scheduler.start()
@@ -78,7 +78,11 @@ def execute_scheduled_function(func_id: str, user_id: str, func_name: str, code:
             "return_value": run_res.get("return_value"),
             "error_message": run_res.get("error_message")
         }
-        requests.post(f"{BACKEND_API_URL}/api/monitoring/internal/record_log", json=log_entry, timeout=5)
+        try:
+            requests.post(f"{BACKEND_API_URL}/api/monitoring/internal/record_log", json=log_entry, timeout=5)
+        except Exception:
+            # Fallback to direct VPC IP if tunnel is busy
+            requests.post("http://172.31.9.80:8000/api/monitoring/internal/record_log", json=log_entry, timeout=5)
     except Exception as e:
         logger.warning(f"Could not record execution log to backend: {e}")
 
