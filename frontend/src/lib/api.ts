@@ -1,0 +1,150 @@
+// API Client for MiniAWS Console
+
+const API_BASE = typeof window !== "undefined" 
+  ? (process.env.NEXT_PUBLIC_API_URL || "")
+  : "http://127.0.0.1:8000";
+
+export const getStoredUserId = (): string => {
+  if (typeof window === "undefined") return "usr_aarav_sharma";
+  return localStorage.getItem("miniaws_user_id") || "usr_aarav_sharma";
+};
+
+export const setStoredUserId = (userId: string) => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("miniaws_user_id", userId);
+  }
+};
+
+const getHeaders = (extraHeaders: Record<string, string> = {}) => {
+  const headers: Record<string, string> = {
+    "X-User-Id": getStoredUserId(),
+    ...extraHeaders,
+  };
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("miniaws_token");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+  return headers;
+};
+
+export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE}${endpoint}`;
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      ...getHeaders((options.headers as Record<string, string>) || {}),
+    },
+  });
+
+  if (!res.ok) {
+    let errorDetail = "API Request failed";
+    try {
+      const errJson = await res.json();
+      errorDetail = errJson.detail || errJson.message || JSON.stringify(errJson);
+    } catch {
+      errorDetail = `HTTP ${res.status}: ${res.statusText}`;
+    }
+    throw new Error(errorDetail);
+  }
+
+  return res.json();
+}
+
+// 1. Dashboard
+export const getDashboardSummary = () => fetchApi<any>("/api/dashboard/summary");
+
+// 2. Storage
+export const listFiles = () => fetchApi<any[]>("/api/storage/files");
+export const deleteFile = (fileId: string) => 
+  fetchApi<any>(`/api/storage/delete/${fileId}`, { method: "DELETE" });
+export const uploadFile = async (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`${API_BASE}/api/storage/upload`, {
+    method: "POST",
+    headers: {
+      "X-User-Id": getStoredUserId(),
+    },
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Upload failed" }));
+    throw new Error(err.detail || "Upload failed");
+  }
+  return res.json();
+};
+
+// 3. Websites
+export const listWebsites = () => fetchApi<any[]>("/api/websites");
+export const createWebsite = (data: {
+  subdomain: string;
+  site_name: string;
+  description?: string;
+  html_content: string;
+  css_content?: string;
+  js_content?: string;
+}) => fetchApi<any>("/api/websites/create", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(data),
+});
+export const getWebsiteSource = (siteId: string) => 
+  fetchApi<{ site_id: string; html: string; css: string; js: string }>(`/api/websites/${siteId}/source`);
+export const updateWebsite = (siteId: string, data: any) => 
+  fetchApi<any>(`/api/websites/${siteId}/update`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+export const deleteWebsite = (siteId: string) => 
+  fetchApi<any>(`/api/websites/${siteId}`, { method: "DELETE" });
+
+// 4. Functions
+export const listFunctions = () => fetchApi<any[]>("/api/functions");
+export const getFunction = (funcId: string) => fetchApi<any>(`/api/functions/${funcId}`);
+export const createFunction = (data: any) => fetchApi<any>("/api/functions/create", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(data),
+});
+export const updateFunction = (funcId: string, data: any) => 
+  fetchApi<any>(`/api/functions/${funcId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+export const testRunFunction = (funcId: string, payload: any) => 
+  fetchApi<any>(`/api/functions/${funcId}/test`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+export const deleteFunction = (funcId: string) => 
+  fetchApi<any>(`/api/functions/${funcId}`, { method: "DELETE" });
+
+// 5. API Gateway
+export const listApiRoutes = () => fetchApi<any[]>("/api/gateway/routes");
+export const createApiRoute = (data: any) => fetchApi<any>("/api/gateway/routes", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(data),
+});
+export const deleteApiRoute = (routeId: string) => 
+  fetchApi<any>(`/api/gateway/routes/${routeId}`, { method: "DELETE" });
+
+// 6. Monitoring
+export const getExecutionLogs = (params?: { function_id?: string; status_filter?: string; limit?: number }) => {
+  const query = new URLSearchParams();
+  if (params?.function_id) query.append("function_id", params.function_id);
+  if (params?.status_filter) query.append("status_filter", params.status_filter);
+  if (params?.limit) query.append("limit", params.limit.toString());
+  return fetchApi<any[]>(`/api/monitoring/logs?${query.toString()}`);
+};
+export const getMonitoringStats = () => fetchApi<any>("/api/monitoring/stats");
+export const getChartData = () => fetchApi<any>("/api/monitoring/chart_data");
+export const getSystemTiers = () => fetchApi<any>("/api/monitoring/system_tiers");
+
+// 7. Users / Switcher
+export const listUsers = () => fetchApi<any[]>("/api/auth/users");
