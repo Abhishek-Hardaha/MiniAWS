@@ -131,7 +131,7 @@ class FunctionResponse(BaseModel):
         from_attributes = True
 
 class FunctionTestRunRequest(BaseModel):
-    code: str
+    code: Optional[str] = None
     event: Optional[Dict[str, Any]] = None
     timeout_seconds: Optional[int] = 5
 
