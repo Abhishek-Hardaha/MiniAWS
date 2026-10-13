@@ -381,15 +381,20 @@ export default function WebHostingPage() {
             position: "relative",
             pointerEvents: "none",
             userSelect: "none",
+            height: "140px",
+            width: "250px",
+            borderRadius: "16px",
+            overflow: "hidden",
           }}
         >
           <img
-            src="/web-hosting-3d-graphic.png"
+            src="/Web_Hosting.png"
             alt="StackSync Web Hosting"
             style={{
-              height: "115px",
+              width: "100%",
+              height: "100%",
               objectFit: "contain",
-              filter: "drop-shadow(0 14px 28px rgba(0, 0, 0, 0.6))",
+              filter: "drop-shadow(0 10px 24px rgba(0, 0, 0, 0.5))",
             }}
           />
         </div>
