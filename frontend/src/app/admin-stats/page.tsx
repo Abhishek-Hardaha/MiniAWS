@@ -242,23 +242,27 @@ export default function AdminStatsPage() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontSize: "13px", color: "#cbd5e1" }}>Password:</span>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <code style={{ fontSize: "14px", color: "#38bdf8", fontWeight: 700 }}>
-                        {showPassword ? secureRdp?.password : "••••••••••••"}
+                      <code style={{ fontSize: "13px", color: secureRdp?.is_authorized ? "#38bdf8" : "#94a3b8", fontWeight: 700 }}>
+                        {secureRdp?.is_authorized ? (showPassword ? secureRdp?.password : "••••••••••••") : "Protected (Root Admin)"}
                       </code>
-                      <button
-                        onClick={() => setShowPassword(!showPassword)}
-                        style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8" }}
-                        title={showPassword ? "Hide password" : "Reveal password"}
-                      >
-                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                      </button>
-                      <button
-                        onClick={() => copyToClipboard(secureRdp?.password || "", "pwd")}
-                        style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8" }}
-                        title="Copy password"
-                      >
-                        {copiedText === "pwd" ? <Check size={14} color="#34d399" /> : <Copy size={14} />}
-                      </button>
+                      {secureRdp?.is_authorized && (
+                        <>
+                          <button
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8" }}
+                            title={showPassword ? "Hide password" : "Reveal password"}
+                          >
+                            {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                          </button>
+                          <button
+                            onClick={() => copyToClipboard(secureRdp?.password || "", "pwd")}
+                            style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8" }}
+                            title="Copy password"
+                          >
+                            {copiedText === "pwd" ? <Check size={14} color="#34d399" /> : <Copy size={14} />}
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -276,38 +280,48 @@ export default function AdminStatsPage() {
                     One-Click .RDP File Downloads
                   </div>
                   <div style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "12px" }}>
-                    Download pre-configured Windows Remote Desktop connection files:
+                    {secureRdp?.is_authorized
+                      ? "Download pre-configured Windows Remote Desktop connection files:"
+                      : "Remote Desktop connection files are reserved for the root administrator (Abhishek)."}
                   </div>
                 </div>
 
                 <div style={{ display: "flex", gap: "8px" }}>
-                  <a
-                    href={getRdpDownloadUrl("i-miniaws-ec2-1-app")}
-                    download="ec2-1-app.rdp"
-                    className="primary-btn"
-                    style={{ fontSize: "12px", padding: "6px 12px", display: "flex", alignItems: "center", gap: "6px", textDecoration: "none" }}
-                  >
-                    <Download size={13} />
-                    <span>EC2-1 App</span>
-                  </a>
-                  <a
-                    href={getRdpDownloadUrl("i-miniaws-ec2-2-data")}
-                    download="ec2-2-data.rdp"
-                    className="primary-btn"
-                    style={{ fontSize: "12px", padding: "6px 12px", display: "flex", alignItems: "center", gap: "6px", textDecoration: "none" }}
-                  >
-                    <Download size={13} />
-                    <span>EC2-2 Data</span>
-                  </a>
-                  <a
-                    href={getRdpDownloadUrl("i-miniaws-ec2-3-exec")}
-                    download="ec2-3-exec.rdp"
-                    className="primary-btn"
-                    style={{ fontSize: "12px", padding: "6px 12px", display: "flex", alignItems: "center", gap: "6px", textDecoration: "none" }}
-                  >
-                    <Download size={13} />
-                    <span>EC2-3 Exec</span>
-                  </a>
+                  {secureRdp?.is_authorized ? (
+                    <>
+                      <a
+                        href={getRdpDownloadUrl("i-miniaws-ec2-1-app")}
+                        download="ec2-1-app.rdp"
+                        className="primary-btn"
+                        style={{ fontSize: "12px", padding: "6px 12px", display: "flex", alignItems: "center", gap: "6px", textDecoration: "none" }}
+                      >
+                        <Download size={13} />
+                        <span>EC2-1 App</span>
+                      </a>
+                      <a
+                        href={getRdpDownloadUrl("i-miniaws-ec2-2-data")}
+                        download="ec2-2-data.rdp"
+                        className="primary-btn"
+                        style={{ fontSize: "12px", padding: "6px 12px", display: "flex", alignItems: "center", gap: "6px", textDecoration: "none" }}
+                      >
+                        <Download size={13} />
+                        <span>EC2-2 Data</span>
+                      </a>
+                      <a
+                        href={getRdpDownloadUrl("i-miniaws-ec2-3-exec")}
+                        download="ec2-3-exec.rdp"
+                        className="primary-btn"
+                        style={{ fontSize: "12px", padding: "6px 12px", display: "flex", alignItems: "center", gap: "6px", textDecoration: "none" }}
+                      >
+                        <Download size={13} />
+                        <span>EC2-3 Exec</span>
+                      </a>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: "12px", color: "#64748b", fontStyle: "italic" }}>
+                      🔒 Administrator login required to download .RDP profiles
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

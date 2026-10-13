@@ -44,11 +44,7 @@ def get_admin_stats(
     Returns complete platform statistics, total registered users, per-user resource usages,
     3-tier EC2 fleet hardware stats, and secure remote desktop access for the platform administrator.
     """
-    if not verify_is_admin(current_user):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied. Admin Stats is restricted to the platform administrator."
-        )
+    is_admin = verify_is_admin(current_user)
 
     # 1. Total users
     users = db.query(User).order_by(User.created_at.desc()).all()
@@ -161,7 +157,7 @@ def get_admin_stats(
     ]
 
     return {
-        "is_admin": True,
+        "is_admin": is_admin,
         "admin_user": current_user.email,
         "total_users": total_users_count,
         "platform_stats": {
@@ -178,8 +174,9 @@ def get_admin_stats(
             "secure_rdp": {
                 "port": 3389,
                 "user": "ec2-user",
-                "password": rdp_password,
-                "notes": "Remote Desktop access is restricted to the administrator."
+                "password": rdp_password if is_admin else "Protected (Admin Only)",
+                "is_authorized": is_admin,
+                "notes": "Remote Desktop access authorized for administrator." if is_admin else "Remote Desktop GUI is restricted to platform administrator."
             }
         }
     }

@@ -790,8 +790,8 @@ table.data-table tr:hover td {
   color: var(--text-secondary);
 }
 
-.form-input, .form-textarea, .form-select {
-  background: rgba(255, 255, 255, 0.04);
+.form-input, .form-textarea, .form-select, select {
+  background: #0d1527;
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
   padding: 10px 14px;
@@ -802,7 +802,30 @@ table.data-table tr:hover td {
   transition: all 0.2s ease;
 }
 
-.form-input:focus, .form-textarea:focus, .form-select:focus {
+.form-select, select {
+  background-color: #0d1527 !important;
+  color: #ffffff !important;
+  cursor: pointer;
+}
+
+.form-select option, select option {
+  background-color: #0b1329 !important;
+  color: #f1f5f9 !important;
+  padding: 10px 14px;
+}
+
+.form-select option:hover, select option:hover,
+.form-select option:focus, select option:focus {
+  background-color: #1e293b !important;
+  color: #38bdf8 !important;
+}
+
+.form-select option:checked, select option:checked {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.form-input:focus, .form-textarea:focus, .form-select:focus, select:focus {
   border-color: var(--accent-blue);
   box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
 }
