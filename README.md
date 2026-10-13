@@ -37,11 +37,11 @@ graph TD
 
 ### Multi-Tier Instance Breakdown
 
-| Instance | Role | Public IP | Private IP | Services & Ports |
+| Instance | Role | Public IP |  Services & Ports |
 | :--- | :--- | :--- | :--- | :--- |
-| **EC2 Instance 1** | **Application Tier** | `35.159.95.208` | `172.31.9.80` | Next.js Frontend (`:3000`), FastAPI Backend & API Gateway (`:8000`), Nginx Proxy (`:80`) |
-| **EC2 Instance 2** | **Data Tier** | `3.127.237.130` | `172.31.12.181` | PostgreSQL 16 (`:5432`), S3 Storage Service (`:9000`), Static Web Server (`:8080`) |
-| **EC2 Instance 3** | **Execution Tier** | `3.71.47.123` | `172.31.3.155` | Python Function Runner (`:5001`), APScheduler (`:5002`), Prometheus Metrics (`/metrics`) |
+| **EC2 Instance 1** | **Application Tier** | `35.159.95.208` |  Next.js Frontend (`:3000`), FastAPI Backend & API Gateway (`:8000`), Nginx Proxy (`:80`) |
+| **EC2 Instance 2** | **Data Tier** | `3.127.237.130` |  PostgreSQL 16 (`:5432`), S3 Storage Service (`:9000`), Static Web Server (`:8080`) |
+| **EC2 Instance 3** | **Execution Tier** | `3.71.47.123` |  Python Function Runner (`:5001`), APScheduler (`:5002`), Prometheus Metrics (`/metrics`) |
 
 ---
 
