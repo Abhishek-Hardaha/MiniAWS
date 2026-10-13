@@ -23,7 +23,11 @@ import {
 import { getDashboardSummary } from "@/lib/api";
 import RadialProgressGauge from "@/components/charts/RadialProgressGauge";
 import AreaTimelineChart, { ChartDataPoint } from "@/components/charts/AreaTimelineChart";
-import Hyperspeed from "@/components/Hyperspeed";
+import dynamic from "next/dynamic";
+
+const Hyperspeed = dynamic(() => import("@/components/Hyperspeed"), {
+  ssr: false,
+});
 
 export default function HomePage() {
   const [data, setData] = useState<any>(null);
