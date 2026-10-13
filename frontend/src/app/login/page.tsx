@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Server,
   Globe,
+  Zap,
   Activity,
   Cpu,
   CheckCircle2,
