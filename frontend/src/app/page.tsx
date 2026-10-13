@@ -94,7 +94,7 @@ export default function HomePage() {
       <section className="hero-card">
         <div className="hero-left">
           <h1 className="hero-title">
-            {userName} <span style={{ fontSize: "28px" }}>👋</span>
+            Hi, {userName} <span style={{ fontSize: "28px" }}>👋</span>
           </h1>
           <p className="hero-sub">
             Your multi-tier cloud environment is active and running.<br />
