@@ -65,35 +65,6 @@ def get_dashboard_summary(
             time_ago=format_time_ago(a.created_at)
         ))
 
-    # Fallback to screenshot activities if user is Aarav Sharma and empty
-    if not recent_feed and current_user.id == "usr_aarav_sharma":
-        recent_feed = [
-            ActivityFeedResponse(
-                id="act_1", action_type="file_upload", title="Uploaded file report.pdf",
-                details="File size 640 MB stored in S3 tier", status="success",
-                created_at=datetime.datetime.utcnow(), time_ago="2 minutes ago"
-            ),
-            ActivityFeedResponse(
-                id="act_2", action_type="func_exec", title="Function data_processor executed",
-                details="Scheduled run completed in 42ms", status="success",
-                created_at=datetime.datetime.utcnow(), time_ago="14 minutes ago"
-            ),
-            ActivityFeedResponse(
-                id="act_3", action_type="api_call", title="API /api/summary called",
-                details="GET /api/summary returned 200 OK", status="success",
-                created_at=datetime.datetime.utcnow(), time_ago="32 minutes ago"
-            ),
-            ActivityFeedResponse(
-                id="act_4", action_type="site_deploy", title="Website index.html updated",
-                details="Deployed new version", status="success",
-                created_at=datetime.datetime.utcnow(), time_ago="1 hour ago"
-            ),
-            ActivityFeedResponse(
-                id="act_5", action_type="func_exec", title="Function image_resize failed",
-                details="Error: Unsupported image format", status="error",
-                created_at=datetime.datetime.utcnow(), time_ago="2 hours ago"
-            ),
-        ]
 
     return DashboardSummaryResponse(
         user=UserResponse.from_orm(current_user),

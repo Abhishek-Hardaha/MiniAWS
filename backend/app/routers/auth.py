@@ -26,16 +26,38 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     )
     db.add(new_user)
     
-    # Create quota
+    plan = user_in.plan_tier or "Developer"
+    if plan == "Starter":
+        max_storage = 1073741824 # 1 GB
+        max_web = 1
+        max_fn = 2
+        max_routes = 2
+        max_daily_req = 100
+        max_month_inv = 500
+    elif plan == "Pro":
+        max_storage = 21474836480 # 20 GB
+        max_web = 10
+        max_fn = 15
+        max_routes = 20
+        max_daily_req = 2000
+        max_month_inv = 10000
+    else: # Developer
+        max_storage = 5368709120 # 5 GB
+        max_web = 3
+        max_fn = 5
+        max_routes = 5
+        max_daily_req = 500
+        max_month_inv = 2000
+
     quota = UserQuota(
         id=f"qta_{user_id}",
         user_id=user_id,
-        max_storage_bytes=5368709120,
-        max_websites=3,
-        max_functions=5,
-        max_api_routes=5,
-        max_daily_api_requests=500,
-        max_monthly_invocations=2000
+        max_storage_bytes=max_storage,
+        max_websites=max_web,
+        max_functions=max_fn,
+        max_api_routes=max_routes,
+        max_daily_api_requests=max_daily_req,
+        max_monthly_invocations=max_month_inv
     )
     db.add(quota)
     db.commit()

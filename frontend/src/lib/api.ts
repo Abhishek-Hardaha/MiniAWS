@@ -4,6 +4,42 @@ const API_BASE = typeof window !== "undefined"
   ? (process.env.NEXT_PUBLIC_API_URL || "")
   : "http://127.0.0.1:8000";
 
+export const getStoredToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("miniaws_token");
+};
+
+export const setStoredToken = (token: string | null) => {
+  if (typeof window !== "undefined") {
+    if (token) {
+      localStorage.setItem("miniaws_token", token);
+    } else {
+      localStorage.removeItem("miniaws_token");
+    }
+  }
+};
+
+export const getStoredUser = (): any | null => {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem("miniaws_user");
+  try {
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const setStoredUser = (user: any | null) => {
+  if (typeof window !== "undefined") {
+    if (user) {
+      localStorage.setItem("miniaws_user", JSON.stringify(user));
+      if (user.id) localStorage.setItem("miniaws_user_id", user.id);
+    } else {
+      localStorage.removeItem("miniaws_user");
+    }
+  }
+};
+
 export const getStoredUserId = (): string => {
   if (typeof window === "undefined") return "usr_aarav_sharma";
   return localStorage.getItem("miniaws_user_id") || "usr_aarav_sharma";
@@ -20,11 +56,9 @@ const getHeaders = (extraHeaders: Record<string, string> = {}) => {
     "X-User-Id": getStoredUserId(),
     ...extraHeaders,
   };
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("miniaws_token");
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
+  const token = getStoredToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
   }
   return headers;
 };
@@ -39,6 +73,15 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
   });
 
   if (!res.ok) {
+    if (res.status === 401 && typeof window !== "undefined") {
+      const isAuthPath = window.location.pathname.startsWith("/login") || window.location.pathname.startsWith("/register");
+      if (!isAuthPath) {
+        // Clear expired token and redirect to login
+        setStoredToken(null);
+        setStoredUser(null);
+        window.location.href = "/login";
+      }
+    }
     let errorDetail = "API Request failed";
     try {
       const errJson = await res.json();
@@ -148,3 +191,47 @@ export const getSystemTiers = () => fetchApi<any>("/api/monitoring/system_tiers"
 
 // 7. Users / Switcher
 export const listUsers = () => fetchApi<any[]>("/api/auth/users");
+
+// 8. Authentication
+export const loginUser = async (credentials: { email: string; password: string }) => {
+  const data = await fetchApi<{ access_token: string; token_type: string; user: any }>("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(credentials),
+  });
+  if (data?.access_token) {
+    setStoredToken(data.access_token);
+    setStoredUser(data.user);
+    if (data.user?.id) setStoredUserId(data.user.id);
+  }
+  return data;
+};
+
+export const registerUser = async (formData: {
+  email: string;
+  password: string;
+  full_name: string;
+  plan_tier?: string;
+}) => {
+  const data = await fetchApi<{ access_token: string; token_type: string; user: any }>("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(formData),
+  });
+  if (data?.access_token) {
+    setStoredToken(data.access_token);
+    setStoredUser(data.user);
+    if (data.user?.id) setStoredUserId(data.user.id);
+  }
+  return data;
+};
+
+export const getCurrentUser = () => fetchApi<any>("/api/auth/me");
+
+export const logoutUser = () => {
+  setStoredToken(null);
+  setStoredUser(null);
+  if (typeof window !== "undefined") {
+    window.location.href = "/login";
+  }
+};

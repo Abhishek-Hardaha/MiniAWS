@@ -1,6 +1,5 @@
 import "@/styles/globals.css";
-import Sidebar from "@/components/Sidebar";
-import Topbar from "@/components/Topbar";
+import AppShell from "@/components/AppShell";
 
 export const metadata = {
   title: "Mini AWS Cloud Platform",
@@ -15,13 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="app-container">
-          <Sidebar />
-          <div className="main-viewport">
-            <Topbar />
-            <main>{children}</main>
-          </div>
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

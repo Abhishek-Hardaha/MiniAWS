@@ -29,70 +29,59 @@ def get_or_create_quota(db: Session, user_id: str) -> UserQuota:
 def get_user_quota_summary(db: Session, user: User) -> QuotaSummary:
     quota = get_or_create_quota(db, user.id)
 
-    # 1. Storage
+    # 1. Real Storage Usage (Bytes)
     storage_used = db.query(func.coalesce(func.sum(StorageFile.file_size), 0)).filter(
         StorageFile.user_id == user.id
     ).scalar() or 0
-    # For UI display matching screenshot (if 0 or demo, set mock baseline like 640MB if aarav)
-    if user.id == "usr_aarav_sharma" and storage_used == 0:
-        storage_used = 671088640 # ~640 MB
+    storage_percent = round((storage_used / quota.max_storage_bytes) * 100, 1) if quota.max_storage_bytes else 0.0
 
-    storage_percent = round((storage_used / quota.max_storage_bytes) * 100, 1) if quota.max_storage_bytes else 0
-
-    # 2. Websites
+    # 2. Real Hosted Websites Count
     websites_count = db.query(func.count(HostedWebsite.id)).filter(
         HostedWebsite.user_id == user.id
     ).scalar() or 0
-    if user.id == "usr_aarav_sharma" and websites_count == 0:
-        websites_count = 1
-    # For Aarav, if screenshot says 1 / 1 (100%), we can reflect max=1 or max=quota.max_websites
-    max_web = 1 if user.id == "usr_aarav_sharma" else quota.max_websites
-    websites_percent = round((websites_count / max_web) * 100, 1) if max_web else 0
+    websites_percent = round((websites_count / quota.max_websites) * 100, 1) if quota.max_websites else 0.0
 
-    # 3. Functions
+    # 3. Real Serverless Functions Count
     functions_count = db.query(func.count(ServerlessFunction.id)).filter(
         ServerlessFunction.user_id == user.id
     ).scalar() or 0
-    if user.id == "usr_aarav_sharma" and functions_count == 0:
-        functions_count = 2
-    max_fn = 3 if user.id == "usr_aarav_sharma" else quota.max_functions
-    functions_percent = round((functions_count / max_fn) * 100, 1) if max_fn else 0
+    functions_percent = round((functions_count / quota.max_functions) * 100, 1) if quota.max_functions else 0.0
 
-    # 4. API Routes
+    # 4. Real API Routes Count
     routes_count = db.query(func.count(ApiRoute.id)).filter(
         ApiRoute.user_id == user.id
     ).scalar() or 0
 
-    # 5. Daily API Requests
+    # 5. Real Daily API Requests
     today = datetime.date.today()
     daily = db.query(DailyUsage).filter(
         DailyUsage.user_id == user.id,
         DailyUsage.usage_date == today
     ).first()
-    api_requests_today = daily.api_requests_count if daily else (128 if user.id == "usr_aarav_sharma" else 0)
-    api_req_percent = round((api_requests_today / quota.max_daily_api_requests) * 100, 1)
+    api_requests_today = daily.api_requests_count if daily else 0
+    api_req_percent = round((api_requests_today / quota.max_daily_api_requests) * 100, 1) if quota.max_daily_api_requests else 0.0
 
-    # 6. Monthly Invocations
+    # 6. Real Monthly Function Invocations
     start_of_month = datetime.datetime.utcnow().replace(day=1, hour=0, minute=0, second=0)
     month_invocations = db.query(func.count(ExecutionLog.id)).filter(
         ExecutionLog.user_id == user.id,
         ExecutionLog.created_at >= start_of_month
-    ).scalar() or (45 if user.id == "usr_aarav_sharma" else 0)
-    inv_percent = round((month_invocations / quota.max_monthly_invocations) * 100, 1)
+    ).scalar() or 0
+    inv_percent = round((month_invocations / quota.max_monthly_invocations) * 100, 1) if quota.max_monthly_invocations else 0.0
 
     return QuotaSummary(
         storage_used_bytes=storage_used,
         storage_max_bytes=quota.max_storage_bytes,
         storage_percent=min(storage_percent, 100.0),
         websites_used=websites_count,
-        websites_max=max_web,
+        websites_max=quota.max_websites,
         websites_percent=min(websites_percent, 100.0),
         functions_used=functions_count,
-        functions_max=max_fn,
+        functions_max=quota.max_functions,
         functions_percent=min(functions_percent, 100.0),
         api_routes_used=routes_count,
         api_routes_max=quota.max_api_routes,
-        api_routes_percent=min(round((routes_count / quota.max_api_routes) * 100, 1), 100.0),
+        api_routes_percent=min(round((routes_count / quota.max_api_routes) * 100, 1), 100.0) if quota.max_api_routes else 0.0,
         api_requests_today=api_requests_today,
         api_requests_max=quota.max_daily_api_requests,
         api_requests_percent=min(api_req_percent, 100.0),

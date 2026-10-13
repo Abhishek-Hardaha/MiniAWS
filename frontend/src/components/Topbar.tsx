@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, Bell, ChevronDown, Check, UserPlus } from "lucide-react";
-import { getStoredUserId, setStoredUserId, listUsers } from "@/lib/api";
+import { Search, Bell, ChevronDown, Check, UserPlus, LogOut } from "lucide-react";
+import { getStoredUserId, setStoredUserId, listUsers, logoutUser } from "@/lib/api";
 
 export default function Topbar() {
   const [currentUser, setCurrentUser] = useState<{ id: string; full_name: string; email: string }>({
@@ -167,6 +167,49 @@ export default function Topbar() {
                   </div>
                 );
               })}
+
+              <div style={{ borderTop: "1px solid rgba(255, 255, 255, 0.08)", marginTop: "8px", paddingTop: "8px" }}>
+                <a
+                  href="/register"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "8px 10px",
+                    borderRadius: "8px",
+                    color: "#94a3b8",
+                    fontSize: "12px",
+                    textDecoration: "none",
+                  }}
+                >
+                  <UserPlus size={14} />
+                  <span>Register New Account</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    logoutUser();
+                  }}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "8px 10px",
+                    borderRadius: "8px",
+                    color: "#f87171",
+                    fontSize: "12px",
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    textAlign: "left",
+                  }}
+                >
+                  <LogOut size={14} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -174,3 +217,4 @@ export default function Topbar() {
     </header>
   );
 }
+

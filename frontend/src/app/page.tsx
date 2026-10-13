@@ -29,89 +29,34 @@ export default function HomePage() {
         setLoading(false);
       })
       .catch((err) => {
-        console.warn("Failed to fetch dashboard data, using pre-seeded state:", err);
-        // Fallback matching reference screenshot
-        setData({
-          user: {
-            full_name: "Aarav Sharma",
-            plan_tier: "Developer",
-          },
-          quotas: {
-            storage_used_bytes: 671088640, // 640 MB
-            storage_max_bytes: 5368709120, // 5 GB
-            storage_percent: 12,
-            functions_used: 2,
-            functions_max: 3,
-            functions_percent: 66,
-            api_requests_today: 128,
-            api_requests_max: 500,
-            api_requests_percent: 26,
-            websites_used: 1,
-            websites_max: 1,
-            websites_percent: 100,
-          },
-          recent_activity: [
-            {
-              id: "act_1",
-              action_type: "file_upload",
-              title: "Uploaded file report.pdf",
-              time_ago: "2 minutes ago",
-              status: "success",
-            },
-            {
-              id: "act_2",
-              action_type: "func_exec",
-              title: "Function data_processor executed",
-              time_ago: "14 minutes ago",
-              status: "success",
-            },
-            {
-              id: "act_3",
-              action_type: "api_call",
-              title: "API /api/summary called",
-              time_ago: "32 minutes ago",
-              status: "success",
-            },
-            {
-              id: "act_4",
-              action_type: "site_deploy",
-              title: "Website index.html updated",
-              time_ago: "1 hour ago",
-              status: "success",
-            },
-            {
-              id: "act_5",
-              action_type: "func_exec",
-              title: "Function image_resize failed",
-              time_ago: "2 hours ago",
-              status: "error",
-            },
-          ],
-        });
+        console.error("Failed to fetch dashboard data:", err);
         setLoading(false);
       });
   }, []);
 
-  const userName = data?.user?.full_name || "Aarav Sharma";
+  const userName = data?.user?.full_name || "Cloud User";
   const quotas = data?.quotas || {
-    storage_used_bytes: 671088640,
+    storage_used_bytes: 0,
     storage_max_bytes: 5368709120,
-    storage_percent: 12,
-    functions_used: 2,
-    functions_max: 3,
-    functions_percent: 66,
-    api_requests_today: 128,
+    storage_percent: 0,
+    functions_used: 0,
+    functions_max: 5,
+    functions_percent: 0,
+    api_requests_today: 0,
     api_requests_max: 500,
-    api_requests_percent: 26,
-    websites_used: 1,
-    websites_max: 1,
-    websites_percent: 100,
+    api_requests_percent: 0,
+    websites_used: 0,
+    websites_max: 3,
+    websites_percent: 0,
   };
   const activities = data?.recent_activity || [];
 
   const formatStorage = (bytes: number) => {
-    if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(0)} GB`;
-    return `${(bytes / 1024 ** 2).toFixed(0)} MB`;
+    if (!bytes || bytes === 0) return "0 MB";
+    if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+    if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+    if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${bytes} B`;
   };
 
   return (

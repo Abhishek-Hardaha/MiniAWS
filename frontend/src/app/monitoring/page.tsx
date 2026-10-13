@@ -22,11 +22,11 @@ import { getExecutionLogs, getMonitoringStats, getSystemTiers } from "@/lib/api"
 export default function MonitoringPage() {
   const [logs, setLogs] = useState<any[]>([]);
   const [stats, setStats] = useState<any>({
-    total_invocations: 45,
-    success_count: 43,
-    error_count: 2,
-    success_rate_percent: 95.6,
-    avg_duration_ms: 42.1,
+    total_invocations: 0,
+    success_count: 0,
+    error_count: 0,
+    success_rate_percent: 100.0,
+    avg_duration_ms: 0.0,
   });
   const [tiers, setTiers] = useState<any[]>([]);
   const [activeLog, setActiveLog] = useState<any | null>(null);
