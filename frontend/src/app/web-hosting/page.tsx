@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Globe,
   Upload,
@@ -14,16 +14,24 @@ import {
   X,
   Copy,
   AlertCircle,
-  Server,
-  Layers,
-  Cpu,
-  ShieldCheck,
   Settings,
   Link as LinkIcon,
+  UploadCloud,
+  Check,
+  Calendar,
+  HardDrive,
+  MoreVertical,
+  Info,
 } from "lucide-react";
-import { listWebsites, createWebsite, updateWebsite, deleteWebsite, getWebsiteSource, updateWebsiteDomain } from "@/lib/api";
-import RadialProgressGauge from "@/components/charts/RadialProgressGauge";
-import BarMetricChart, { BarMetricItem } from "@/components/charts/BarMetricChart";
+import {
+  listWebsites,
+  createWebsite,
+  updateWebsite,
+  deleteWebsite,
+  getWebsiteSource,
+  updateWebsiteDomain,
+  getDashboardSummary,
+} from "@/lib/api";
 
 const DEFAULT_SAMPLE_HTML = `<!DOCTYPE html>
 <html lang="en">
@@ -76,576 +84,1203 @@ const DEFAULT_SAMPLE_HTML = `<!DOCTYPE html>
 
 export default function WebHostingPage() {
   const [websites, setWebsites] = useState<any[]>([]);
+  const [quota, setQuota] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<"websites" | "preview">("websites");
+  const [selectedPreviewSite, setSelectedPreviewSite] = useState<any | null>(null);
+
+  // Modals
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [activeSite, setActiveSite] = useState<any | null>(null);
-  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [domainModalOpen, setDomainModalOpen] = useState(false);
+  const [domainSite, setDomainSite] = useState<any | null>(null);
 
-  // Form state
+  // Action popover
+  const [actionMenuOpenId, setActionMenuOpenId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Form states
   const [siteName, setSiteName] = useState("");
   const [subdomain, setSubdomain] = useState("");
   const [customDomain, setCustomDomain] = useState("");
   const [description, setDescription] = useState("");
   const [htmlContent, setHtmlContent] = useState(DEFAULT_SAMPLE_HTML);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Domain & URL Edit Modal state
-  const [domainModalOpen, setDomainModalOpen] = useState(false);
-  const [domainSite, setDomainSite] = useState<any | null>(null);
+  // Drag and drop upload state
+  const [isDragging, setIsDragging] = useState(false);
+  const uploadFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Edit Domain form
   const [editSubdomain, setEditSubdomain] = useState("");
   const [editCustomDomain, setEditCustomDomain] = useState("");
   const [editSiteName, setEditSiteName] = useState("");
   const [editDescription, setEditDescription] = useState("");
-  const [domainUpdating, setDomainUpdating] = useState(false);
-  const [domainErrorMsg, setDomainErrorMsg] = useState<string | null>(null);
 
-  const loadWebsites = () => {
+  const loadData = () => {
     listWebsites()
-      .then((res) => setWebsites(res))
+      .then((res) => {
+        setWebsites(res || []);
+        if (res && res.length > 0 && !selectedPreviewSite) {
+          setSelectedPreviewSite(res[0]);
+        }
+      })
+      .catch((err) => console.error(err));
+
+    getDashboardSummary()
+      .then((res) => setQuota(res?.quotas || null))
       .catch((err) => console.error(err));
   };
 
   useEffect(() => {
-    loadWebsites();
+    loadData();
   }, []);
 
-  const handleFileRead = (file: File) => {
-    if (!file.name.toLowerCase().endsWith(".html") && !file.name.toLowerCase().endsWith(".htm")) {
-      setErrorMsg("Please upload a valid HTML file (.html or .htm)");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      setHtmlContent(text);
-      setUploadedFileName(file.name);
-      setErrorMsg(null);
-
-      // Pre-fill siteName if empty
-      if (!siteName) {
-        const baseName = file.name.replace(/\.[^/.]+$/, "");
-        setSiteName(baseName.charAt(0).toUpperCase() + baseName.slice(1));
-      }
-      // Pre-fill subdomain if empty
-      if (!subdomain) {
-        const baseName = file.name.replace(/\.[^/.]+$/, "");
-        setSubdomain(baseName.toLowerCase().replace(/[^a-z0-9-]/g, "-"));
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFileRead(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleFileRead(e.target.files[0]);
-    }
-  };
+  // Close menus on outside click
+  useEffect(() => {
+    const handleOutsideClick = () => setActionMenuOpenId(null);
+    window.addEventListener("click", handleOutsideClick);
+    return () => window.removeEventListener("click", handleOutsideClick);
+  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setIsSubmitting(true);
     try {
+      const generatedSubdomain = subdomain.trim() || siteName.toLowerCase().replace(/[^a-z0-9]/g, "-");
       await createWebsite({
-        site_name: siteName,
-        subdomain: subdomain.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+        site_name: siteName.trim(),
+        subdomain: generatedSubdomain,
         custom_domain: customDomain.trim() || undefined,
-        description,
-        html_content: htmlContent,
+        description: description.trim() || undefined,
+        index_html: htmlContent,
       });
+      setSuccessMsg(`Website "${siteName}" deployed successfully!`);
+      setTimeout(() => setSuccessMsg(null), 3000);
       setModalOpen(false);
-      setSiteName("");
-      setSubdomain("");
-      setCustomDomain("");
-      setDescription("");
-      setUploadedFileName(null);
-      loadWebsites();
+      resetForm();
+      loadData();
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to deploy website");
+      setErrorMsg(err.message || "Failed to create website");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleOpenDomainSettings = (site: any) => {
+  const resetForm = () => {
+    setSiteName("");
+    setSubdomain("");
+    setCustomDomain("");
+    setDescription("");
+    setHtmlContent(DEFAULT_SAMPLE_HTML);
+    setErrorMsg(null);
+  };
+
+  const handleEditClick = async (site: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActionMenuOpenId(null);
+    setActiveSite(site);
+    setErrorMsg(null);
+    try {
+      const res = await getWebsiteSource(site.id);
+      setHtmlContent(res.index_html || DEFAULT_SAMPLE_HTML);
+      setEditModalOpen(true);
+    } catch (err: any) {
+      alert(`Could not fetch HTML source: ${err.message}`);
+    }
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeSite) return;
+    setIsSubmitting(true);
+    setErrorMsg(null);
+    try {
+      await updateWebsite(activeSite.id, {
+        index_html: htmlContent,
+      });
+      setSuccessMsg(`Website "${activeSite.site_name}" updated and redeployed!`);
+      setTimeout(() => setSuccessMsg(null), 3000);
+      setEditModalOpen(false);
+      loadData();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Failed to update website");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDomainClick = (site: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActionMenuOpenId(null);
     setDomainSite(site);
     setEditSubdomain(site.subdomain || "");
     setEditCustomDomain(site.custom_domain || "");
     setEditSiteName(site.site_name || "");
     setEditDescription(site.description || "");
-    setDomainErrorMsg(null);
+    setErrorMsg(null);
     setDomainModalOpen(true);
   };
 
-  const handleSaveDomainSettings = async (e: React.FormEvent) => {
+  const handleSaveDomain = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!domainSite) return;
-    setDomainUpdating(true);
-    setDomainErrorMsg(null);
+    setIsSubmitting(true);
+    setErrorMsg(null);
     try {
       await updateWebsiteDomain(domainSite.id, {
-        subdomain: editSubdomain.toLowerCase().trim().replace(/[^a-z0-9-]/g, "-"),
+        site_name: editSiteName.trim() || undefined,
+        subdomain: editSubdomain.trim() || undefined,
         custom_domain: editCustomDomain.trim() || undefined,
-        site_name: editSiteName.trim(),
-        description: editDescription.trim(),
+        description: editDescription.trim() || undefined,
       });
+      setSuccessMsg("Domain & URL routing updated successfully!");
+      setTimeout(() => setSuccessMsg(null), 3000);
       setDomainModalOpen(false);
-      loadWebsites();
+      loadData();
     } catch (err: any) {
-      setDomainErrorMsg(err.message || "Failed to update domain and URL");
+      setErrorMsg(err.message || "Failed to update domain configuration");
     } finally {
-      setDomainUpdating(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleOpenEditor = async (site: any) => {
-    setActiveSite(site);
-    try {
-      const src = await getWebsiteSource(site.id);
-      setHtmlContent(src.html || DEFAULT_SAMPLE_HTML);
-    } catch {
-      setHtmlContent(DEFAULT_SAMPLE_HTML);
-    }
-    setEditModalOpen(true);
-  };
-
-  const handleUpdate = async () => {
-    if (!activeSite) return;
-    try {
-      await updateWebsite(activeSite.id, { html_content: htmlContent });
-      setEditModalOpen(false);
-      loadWebsites();
-    } catch (err: any) {
-      alert(`Error updating: ${err.message}`);
-    }
-  };
-
-  const handleDelete = async (siteId: string) => {
-    if (!confirm("Are you sure you want to delete this website?")) return;
+  const handleDelete = async (siteId: string, siteName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActionMenuOpenId(null);
+    if (!confirm(`Are you sure you want to delete website "${siteName}"? This will free your hosting quota.`)) return;
     try {
       await deleteWebsite(siteId);
-      loadWebsites();
+      setSuccessMsg(`Website "${siteName}" deleted.`);
+      setTimeout(() => setSuccessMsg(null), 3000);
+      loadData();
     } catch (err: any) {
-      alert(`Error: ${err.message}`);
+      alert(`Error deleting website: ${err.message}`);
     }
   };
 
-  const handleCopy = (url: string) => {
-    const fullUrl = `${window.location.origin}${url}`;
-    navigator.clipboard.writeText(fullUrl);
-    alert(`Copied URL to clipboard: ${fullUrl}`);
+  const handleCopyLink = (url: string, id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2500);
+    setActionMenuOpenId(null);
   };
 
-  const websiteBarItems: BarMetricItem[] = [
-    {
-      label: "Live Virtual Hosts",
-      value: websites.length,
-      max: 3,
-      displayValue: `${websites.length} / 3`,
-      color: "#3b82f6",
-      icon: <Globe size={15} color="#3b82f6" />,
-    },
-    {
-      label: "Custom Subdomain Routing",
-      value: websites.length,
-      max: 3,
-      displayValue: `${websites.length} Bound`,
-      color: "#06b6d4",
-      icon: <Layers size={15} color="#06b6d4" />,
-    },
-    {
-      label: "Instant Edge Reloads",
-      value: websites.length,
-      max: 3,
-      displayValue: "100% Synced",
-      color: "#10b981",
-      icon: <CheckCircle size={15} color="#10b981" />,
-    },
-  ];
+  // Direct File Upload from right box
+  const handleDirectFileUpload = async (file: File) => {
+    setErrorMsg(null);
+    if (!file.name.endsWith(".html") && !file.name.endsWith(".htm") && !file.name.endsWith(".zip")) {
+      setErrorMsg("Please upload a valid .html file (named index.html) or a .zip archive.");
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const derivedName = file.name.replace(/\.[^/.]+$/, "").toLowerCase().replace(/[^a-z0-9]/g, "-") || "my-website";
+      setIsSubmitting(true);
+      await createWebsite({
+        site_name: derivedName,
+        subdomain: derivedName,
+        index_html: text,
+      });
+      setSuccessMsg(`Website "${derivedName}" uploaded and deployed successfully!`);
+      setTimeout(() => setSuccessMsg(null), 3000);
+      loadData();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Failed to deploy website from file");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Drag and Drop handlers
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      await handleDirectFileUpload(e.dataTransfer.files[0]);
+    }
+  };
+
+  const getRelativeTime = (dateStr: string) => {
+    try {
+      const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+      if (diff < 60) return "Just now";
+      if (diff < 3600) return `${Math.floor(diff / 60)} mins ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+      if (diff < 604800) return `${Math.floor(diff / 86400)} days ago`;
+      return new Date(dateStr).toLocaleDateString();
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const maxWebsites = quota?.websites_max || 3;
+  const usedWebsites = websites.length;
+  const usedPercent = Math.min(100, Math.round((usedWebsites / maxWebsites) * 100));
 
   return (
-    <div className="content-wrapper">
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px" }}>
+    <div className="content-wrapper" style={{ paddingBottom: "48px" }}>
+      {/* 1. Hero Header & 3D Neon Glass Browser Graphic */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "28px",
+          position: "relative",
+        }}
+      >
         <div>
-          <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#fff", display: "flex", alignItems: "center", gap: "10px" }}>
-            <Globe size={26} color="#3b82f6" />
-            Static Website Hosting (S3 Website / CloudFront)
+          <h1
+            style={{
+              fontSize: "32px",
+              fontWeight: 800,
+              color: "#ffffff",
+              letterSpacing: "-0.03em",
+              lineHeight: 1.2,
+            }}
+          >
+            Web Hosting
           </h1>
-          <p style={{ color: "#94a3b8", fontSize: "14px", marginTop: "4px" }}>
-            Upload HTML, CSS, and JS assets to instantly deploy public websites on EC2 Data Tier.
+          <p
+            style={{
+              color: "#94a3b8",
+              fontSize: "14px",
+              marginTop: "6px",
+              fontWeight: 400,
+            }}
+          >
+            Host and manage your static websites with ease.
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
-          <label className="btn-secondary" style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
-            <Upload size={16} />
-            <span>Upload HTML</span>
-            <input
-              type="file"
-              accept=".html,.htm"
-              style={{ display: "none" }}
-              onChange={(e) => {
-                handleFileInputChange(e);
+        {/* 3D Glass Browser Mockup Graphic from Web_Hosting.png */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            position: "relative",
+            pointerEvents: "none",
+            userSelect: "none",
+          }}
+        >
+          <img
+            src="/web-hosting-3d-graphic.png"
+            alt="MiniAWS Web Hosting"
+            style={{
+              height: "115px",
+              objectFit: "contain",
+              filter: "drop-shadow(0 14px 28px rgba(0, 0, 0, 0.6))",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* 2. Top Stats Bar (Website Hosting Usage matching Web_Hosting.png) */}
+      <div
+        style={{
+          background: "#0b1222",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          borderRadius: "16px",
+          padding: "20px 24px",
+          marginBottom: "28px",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.25)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "14px",
+          }}
+        >
+          <span style={{ fontSize: "15px", fontWeight: 700, color: "#ffffff" }}>
+            Website Hosting
+          </span>
+          <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
+            <span style={{ fontSize: "14px", fontWeight: 700, color: "#ffffff" }}>
+              <span style={{ color: "#38bdf8" }}>{usedWebsites}</span> / {maxWebsites} website used
+            </span>
+            <span style={{ fontSize: "13px", fontWeight: 600, color: "#94a3b8" }}>
+              {usedPercent}%
+            </span>
+          </div>
+        </div>
+
+        {/* Glowing Gradient Progress Bar */}
+        <div
+          style={{
+            width: "100%",
+            height: "10px",
+            background: "#161f36",
+            borderRadius: "9999px",
+            overflow: "hidden",
+            position: "relative",
+          }}
+        >
+          <div
+            style={{
+              width: `${Math.max(2, usedPercent)}%`,
+              height: "100%",
+              background: "linear-gradient(90deg, #38bdf8 0%, #818cf8 60%, #c084fc 100%)",
+              borderRadius: "9999px",
+              boxShadow: "0 0 12px rgba(56, 189, 248, 0.5)",
+              transition: "width 0.4s ease-out",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Notifications */}
+      {successMsg && (
+        <div
+          style={{
+            background: "rgba(16, 185, 129, 0.12)",
+            border: "1px solid rgba(16, 185, 129, 0.3)",
+            borderRadius: "12px",
+            padding: "12px 18px",
+            marginBottom: "20px",
+            color: "#34d399",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            fontSize: "13px",
+            fontWeight: 600,
+          }}
+        >
+          <Check size={18} />
+          <span>{successMsg}</span>
+        </div>
+      )}
+
+      {errorMsg && (
+        <div
+          style={{
+            background: "rgba(239, 68, 68, 0.12)",
+            border: "1px solid rgba(239, 68, 68, 0.3)",
+            borderRadius: "12px",
+            padding: "12px 18px",
+            marginBottom: "20px",
+            color: "#f87171",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            fontSize: "13px",
+          }}
+        >
+          <AlertCircle size={18} />
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
+      {/* 3. Main Split Layout: Left Panel (70%) + Right Panel (30%) */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 340px",
+          gap: "22px",
+          alignItems: "start",
+        }}
+      >
+        {/* Left Panel: My Websites / Preview */}
+        <div
+          style={{
+            background: "#0b1222",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRadius: "18px",
+            padding: "20px 24px",
+            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.3)",
+          }}
+        >
+          {/* Header Toolbar: Tabs + New Website Button */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderBottom: "1px solid rgba(255, 255, 255, 0.07)",
+              paddingBottom: "16px",
+              marginBottom: "20px",
+            }}
+          >
+            {/* Tabs: My Websites / Preview */}
+            <div style={{ display: "flex", gap: "24px" }}>
+              <button
+                onClick={() => setActiveTab("websites")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: activeTab === "websites" ? "#ffffff" : "#94a3b8",
+                  fontSize: "14px",
+                  fontWeight: activeTab === "websites" ? 700 : 500,
+                  padding: "4px 0",
+                  position: "relative",
+                  cursor: "pointer",
+                }}
+              >
+                My Websites
+                {activeTab === "websites" && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      bottom: "-17px",
+                      left: 0,
+                      right: 0,
+                      height: "3px",
+                      background: "linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)",
+                      borderRadius: "3px 3px 0 0",
+                      boxShadow: "0 0 8px rgba(56, 189, 248, 0.6)",
+                    }}
+                  />
+                )}
+              </button>
+
+              <button
+                onClick={() => setActiveTab("preview")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: activeTab === "preview" ? "#ffffff" : "#94a3b8",
+                  fontSize: "14px",
+                  fontWeight: activeTab === "preview" ? 700 : 500,
+                  padding: "4px 0",
+                  position: "relative",
+                  cursor: "pointer",
+                }}
+              >
+                Preview
+                {activeTab === "preview" && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      bottom: "-17px",
+                      left: 0,
+                      right: 0,
+                      height: "3px",
+                      background: "linear-gradient(90deg, #38bdf8 0%, #a855f7 100%)",
+                      borderRadius: "3px 3px 0 0",
+                      boxShadow: "0 0 8px rgba(56, 189, 248, 0.6)",
+                    }}
+                  />
+                )}
+              </button>
+            </div>
+
+            {/* Right: + New Website Button */}
+            <button
+              onClick={() => {
+                resetForm();
                 setModalOpen(true);
               }}
-            />
-          </label>
-          <button className="btn-primary" onClick={() => { setUploadedFileName(null); setModalOpen(true); }}>
-            <Plus size={16} />
-            <span>Deploy New Website</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Web Hosting Analytics Row: Radial Gauge + Host Breakdown + Data Tier Node Telemetry */}
-      <div style={{ display: "grid", gridTemplateColumns: "280px 1.4fr 1fr", gap: "20px", marginBottom: "28px" }}>
-        {/* Radial Quota Gauge */}
-        <div className="chart-panel-card" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <RadialProgressGauge
-            value={websites.length}
-            max={3}
-            color="#3b82f6"
-            label="Static Sites Quota"
-            sub={`${websites.length} of 3 active`}
-            size={130}
-            strokeWidth={11}
-          />
-        </div>
-
-        {/* Website Composition Bar Chart */}
-        <div className="chart-panel-card">
-          <BarMetricChart
-            items={websiteBarItems}
-            title="Static Hosting Status & Quota"
-            subtitle="Virtual host allocation and Nginx edge routing"
-          />
-        </div>
-
-        {/* Data Tier Nginx Node Telemetry */}
-        <div className="chart-panel-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ fontSize: "14px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
-              Data Tier Node Telemetry
-            </div>
-            <div style={{ fontSize: "12px", color: "#94a3b8" }}>
-              EC2 Instance 2 (172.31.12.181:8080)
-            </div>
+              style={{
+                background: "linear-gradient(135deg, #3b82f6 0%, #a855f7 100%)",
+                border: "none",
+                borderRadius: "10px",
+                color: "#ffffff",
+                fontSize: "13px",
+                fontWeight: 700,
+                padding: "8px 18px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                boxShadow: "0 4px 18px rgba(168, 85, 247, 0.35)",
+              }}
+            >
+              <Plus size={16} />
+              <span>New Website</span>
+            </button>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", margin: "16px 0" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
-              <span style={{ color: "#94a3b8" }}>Web Server:</span>
-              <span style={{ color: "#fff", fontWeight: 700, fontFamily: "var(--font-mono)" }}>Nginx 1.24 VHosts</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
-              <span style={{ color: "#94a3b8" }}>Remaining Quota:</span>
-              <span style={{ color: "#34d399", fontWeight: 700, fontFamily: "var(--font-mono)" }}>
-                {Math.max(0, 3 - websites.length)} sites free
-              </span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
-              <span style={{ color: "#94a3b8" }}>Delivery Status:</span>
-              <span style={{ color: "#3b82f6", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
-                <span className="pulse-live-dot" /> Online
-              </span>
-            </div>
-          </div>
-
-          <div style={{ fontSize: "11px", color: "#64748b", borderTop: "1px solid var(--border-subtle)", paddingTop: "10px" }}>
-            Direct path: /var/www/miniaws/sites/
-          </div>
-        </div>
-      </div>
-
-      {/* Websites Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))", gap: "20px" }}>
-        {websites.map((site) => (
-          <div key={site.id} className="panel-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-                <div>
-                  <h3 style={{ fontSize: "17px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
-                    {site.site_name}
-                  </h3>
-                  <div style={{ fontSize: "12px", color: "#60a5fa", fontFamily: "var(--font-mono)" }}>
-                    {site.subdomain}.miniaws.cloud
-                  </div>
-                </div>
-                <span className="status-pill status-success">Live</span>
-              </div>
-
-              <p style={{ color: "#94a3b8", fontSize: "13px", lineHeight: 1.5, marginBottom: "12px" }}>
-                {site.description || "Static web application hosted on Mini AWS Data Tier."}
-              </p>
-
-              {/* Custom Domain Badge (if configured) */}
-              {site.custom_domain && (
+          {/* Tab 1: Websites Cards List (Matching Web_Hosting.png) */}
+          {activeTab === "websites" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {websites.length === 0 ? (
                 <div
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    background: "rgba(56, 189, 248, 0.1)",
-                    border: "1px solid rgba(56, 189, 248, 0.25)",
-                    borderRadius: "8px",
-                    padding: "6px 12px",
-                    marginBottom: "14px",
-                    fontSize: "12px",
-                    color: "#38bdf8",
+                    textAlign: "center",
+                    padding: "60px 20px",
+                    color: "#64748b",
                   }}
                 >
-                  <Globe size={13} />
-                  <span>Custom Domain: <strong>{site.custom_domain}</strong></span>
+                  <Globe size={40} color="#334155" style={{ margin: "0 auto 12px auto" }} />
+                  <div style={{ fontSize: "14px", fontWeight: 600, color: "#94a3b8" }}>
+                    No static websites hosted yet
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#64748b", marginTop: "4px" }}>
+                    Click &quot;New Website&quot; or upload your index.html file to deploy your first static site.
+                  </div>
+                </div>
+              ) : (
+                websites.map((site) => {
+                  const isMenuOpen = actionMenuOpenId === site.id;
+                  const isCopied = copiedId === site.id;
+                  const siteUrl = site.domain_url || site.site_url || `https://${site.subdomain}.miniaws.cloud`;
+
+                  return (
+                    <div
+                      key={site.id}
+                      style={{
+                        background: "#0c1322",
+                        border: "1px solid rgba(255, 255, 255, 0.08)",
+                        borderRadius: "16px",
+                        padding: "18px 20px",
+                        display: "grid",
+                        gridTemplateColumns: "250px 1fr",
+                        gap: "22px",
+                        alignItems: "center",
+                        position: "relative",
+                        transition: "border-color 0.15s ease",
+                      }}
+                    >
+                      {/* Left: Website Preview Thumbnail (Mountain mockup or live preview miniature) */}
+                      <div
+                        onClick={() => {
+                          setSelectedPreviewSite(site);
+                          setActiveTab("preview");
+                        }}
+                        style={{
+                          height: "155px",
+                          borderRadius: "12px",
+                          overflow: "hidden",
+                          position: "relative",
+                          border: "1px solid rgba(255, 255, 255, 0.1)",
+                          cursor: "pointer",
+                          background: "#050811",
+                        }}
+                        title="Click to open interactive preview"
+                      >
+                        <img
+                          src="/website-preview-mockup.png"
+                          alt={site.site_name}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: "8px",
+                            left: "8px",
+                            background: "rgba(0, 0, 0, 0.65)",
+                            backdropFilter: "blur(4px)",
+                            padding: "3px 8px",
+                            borderRadius: "6px",
+                            color: "#fff",
+                            fontSize: "10px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <Eye size={11} color="#38bdf8" />
+                          <span>Preview</span>
+                        </div>
+                      </div>
+
+                      {/* Right: Site Details & Controls */}
+                      <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
+                        <div>
+                          {/* Title & Options Menu */}
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                            <div>
+                              <h3
+                                style={{
+                                  fontSize: "18px",
+                                  fontWeight: 700,
+                                  color: "#ffffff",
+                                  lineHeight: 1.2,
+                                  marginBottom: "6px",
+                                }}
+                              >
+                                {site.site_name}
+                              </h3>
+
+                              {/* Live URL with External Link */}
+                              <a
+                                href={siteUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "6px",
+                                  color: "#38bdf8",
+                                  fontSize: "13px",
+                                  textDecoration: "none",
+                                  fontWeight: 500,
+                                }}
+                              >
+                                <span>{siteUrl}</span>
+                                <ExternalLink size={13} />
+                              </a>
+                            </div>
+
+                            {/* Options Button ⋮ */}
+                            <div style={{ position: "relative" }}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActionMenuOpenId(isMenuOpen ? null : site.id);
+                                }}
+                                className="icon-btn"
+                                style={{ width: "30px", height: "30px", color: "#94a3b8" }}
+                                title="Site Options"
+                              >
+                                <MoreVertical size={16} />
+                              </button>
+
+                              {/* Popover Action Menu */}
+                              {isMenuOpen && (
+                                <div
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{
+                                    position: "absolute",
+                                    right: 0,
+                                    top: "36px",
+                                    width: "200px",
+                                    background: "#0f172a",
+                                    border: "1px solid rgba(255, 255, 255, 0.12)",
+                                    borderRadius: "10px",
+                                    padding: "6px",
+                                    boxShadow: "0 10px 25px rgba(0, 0, 0, 0.6)",
+                                    zIndex: 50,
+                                    textAlign: "left",
+                                  }}
+                                >
+                                  <a
+                                    href={siteUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{
+                                      width: "100%",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                      padding: "8px 10px",
+                                      background: "transparent",
+                                      borderRadius: "6px",
+                                      color: "#e2e8f0",
+                                      fontSize: "12px",
+                                      textDecoration: "none",
+                                      boxSizing: "border-box",
+                                    }}
+                                  >
+                                    <ExternalLink size={14} color="#38bdf8" />
+                                    <span>Open Live Site</span>
+                                  </a>
+
+                                  <button
+                                    onClick={(e) => handleEditClick(site, e)}
+                                    style={{
+                                      width: "100%",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                      padding: "8px 10px",
+                                      background: "transparent",
+                                      border: "none",
+                                      borderRadius: "6px",
+                                      color: "#e2e8f0",
+                                      fontSize: "12px",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    <Code2 size={14} color="#a855f7" />
+                                    <span>Edit Source HTML</span>
+                                  </button>
+
+                                  <button
+                                    onClick={(e) => handleDomainClick(site, e)}
+                                    style={{
+                                      width: "100%",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                      padding: "8px 10px",
+                                      background: "transparent",
+                                      border: "none",
+                                      borderRadius: "6px",
+                                      color: "#e2e8f0",
+                                      fontSize: "12px",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    <Settings size={14} color="#60a5fa" />
+                                    <span>Custom Domain</span>
+                                  </button>
+
+                                  <button
+                                    onClick={(e) => handleCopyLink(siteUrl, site.id, e)}
+                                    style={{
+                                      width: "100%",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                      padding: "8px 10px",
+                                      background: "transparent",
+                                      border: "none",
+                                      borderRadius: "6px",
+                                      color: isCopied ? "#34d399" : "#e2e8f0",
+                                      fontSize: "12px",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    {isCopied ? <Check size={14} color="#34d399" /> : <Copy size={14} color="#94a3b8" />}
+                                    <span>{isCopied ? "URL Copied!" : "Copy Live URL"}</span>
+                                  </button>
+
+                                  <div style={{ height: "1px", background: "rgba(255, 255, 255, 0.08)", margin: "4px 0" }} />
+
+                                  <button
+                                    onClick={(e) => handleDelete(site.id, site.site_name, e)}
+                                    style={{
+                                      width: "100%",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "8px",
+                                      padding: "8px 10px",
+                                      background: "transparent",
+                                      border: "none",
+                                      borderRadius: "6px",
+                                      color: "#f87171",
+                                      fontSize: "12px",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    <Trash2 size={14} color="#f87171" />
+                                    <span>Delete Website</span>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Published Status Pill */}
+                          <div style={{ marginTop: "14px" }}>
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                background: "rgba(16, 185, 129, 0.12)",
+                                border: "1px solid rgba(16, 185, 129, 0.3)",
+                                borderRadius: "9999px",
+                                padding: "4px 12px",
+                                color: "#34d399",
+                                fontSize: "12px",
+                                fontWeight: 600,
+                              }}
+                            >
+                              <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 6px #10b981" }} />
+                              Published
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Metadata row: Last updated + File size */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "24px",
+                            fontSize: "12px",
+                            color: "#94a3b8",
+                            borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+                            paddingTop: "12px",
+                            marginTop: "16px",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <Calendar size={14} color="#64748b" />
+                            <span>Last updated <strong style={{ color: "#e2e8f0" }}>{getRelativeTime(site.created_at)}</strong></span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <HardDrive size={14} color="#64748b" />
+                            <span>File size <strong style={{ color: "#e2e8f0" }}>420 KB</strong></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+
+          {/* Tab 2: Full Interactive Preview */}
+          {activeTab === "preview" && (
+            <div>
+              {websites.length === 0 ? (
+                <div style={{ padding: "40px 20px", textAlign: "center", color: "#64748b" }}>
+                  Deploy a website first to view interactive live preview.
+                </div>
+              ) : (
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <span style={{ fontSize: "13px", color: "#94a3b8" }}>Previewing:</span>
+                      <select
+                        value={selectedPreviewSite?.id || ""}
+                        onChange={(e) => {
+                          const s = websites.find((w) => w.id === e.target.value);
+                          if (s) setSelectedPreviewSite(s);
+                        }}
+                        style={{
+                          background: "#0f172a",
+                          border: "1px solid rgba(255, 255, 255, 0.15)",
+                          borderRadius: "8px",
+                          color: "#fff",
+                          padding: "6px 12px",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {websites.map((w) => (
+                          <option key={w.id} value={w.id}>
+                            {w.site_name} ({w.domain_url || w.site_url})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {selectedPreviewSite && (
+                      <a
+                        href={selectedPreviewSite.domain_url || selectedPreviewSite.site_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn-secondary"
+                        style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", textDecoration: "none" }}
+                      >
+                        <span>Open in New Tab</span>
+                        <ExternalLink size={13} />
+                      </a>
+                    )}
+                  </div>
+
+                  {selectedPreviewSite && (
+                    <div
+                      style={{
+                        height: "500px",
+                        borderRadius: "12px",
+                        overflow: "hidden",
+                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                        background: "#000",
+                      }}
+                    >
+                      <iframe
+                        src={selectedPreviewSite.domain_url || selectedPreviewSite.site_url}
+                        style={{ width: "100%", height: "100%", border: "none" }}
+                        title="Website Preview"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
+            </div>
+          )}
+        </div>
 
-              {/* Endpoint Link Box */}
+        {/* Right Panel: Upload Box & Need help? (Matching Web_Hosting.png) */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+          {/* Card 1: Upload Website */}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            style={{
+              background: "#0b1222",
+              border: isDragging ? "2px dashed #38bdf8" : "1px dashed rgba(255, 255, 255, 0.12)",
+              borderRadius: "18px",
+              padding: "36px 20px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              boxShadow: "0 8px 30px rgba(0, 0, 0, 0.3)",
+            }}
+          >
+            {/* Glowing Cloud Upload Icon */}
+            <div
+              style={{
+                width: "64px",
+                height: "64px",
+                borderRadius: "50%",
+                background: "rgba(56, 189, 248, 0.1)",
+                border: "1px solid rgba(56, 189, 248, 0.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#38bdf8",
+                marginBottom: "18px",
+                boxShadow: "0 0 20px rgba(56, 189, 248, 0.2)",
+              }}
+            >
+              <UploadCloud size={32} strokeWidth={2.2} />
+            </div>
+
+            <h3
+              style={{
+                fontSize: "16px",
+                fontWeight: 700,
+                color: "#ffffff",
+                marginBottom: "6px",
+              }}
+            >
+              Upload Website
+            </h3>
+
+            <p
+              style={{
+                color: "#94a3b8",
+                fontSize: "12px",
+                lineHeight: 1.5,
+                maxWidth: "220px",
+                marginBottom: "20px",
+              }}
+            >
+              Upload your <code style={{ color: "#38bdf8", fontWeight: 600 }}>index.html</code> file to host your website
+            </p>
+
+            {/* Choose File Button */}
+            <button
+              onClick={() => uploadFileInputRef.current?.click()}
+              disabled={isSubmitting}
+              style={{
+                background: "linear-gradient(135deg, #3b82f6 0%, #a855f7 100%)",
+                border: "none",
+                borderRadius: "10px",
+                color: "#ffffff",
+                fontSize: "13px",
+                fontWeight: 700,
+                padding: "10px 28px",
+                cursor: isSubmitting ? "not-allowed" : "pointer",
+                boxShadow: "0 4px 18px rgba(168, 85, 247, 0.4)",
+                marginBottom: "20px",
+              }}
+            >
+              {isSubmitting ? "Deploying..." : "Choose File"}
+            </button>
+
+            {/* Hidden Input */}
+            <input
+              ref={uploadFileInputRef}
+              type="file"
+              accept=".html,.htm,.zip"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  handleDirectFileUpload(e.target.files[0]);
+                  e.target.value = "";
+                }
+              }}
+              disabled={isSubmitting}
+            />
+
+            {/* Divider */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                width: "100%",
+                color: "#64748b",
+                fontSize: "11px",
+                marginBottom: "16px",
+              }}
+            >
+              <div style={{ flex: 1, height: "1px", background: "rgba(255, 255, 255, 0.08)" }} />
+              <span style={{ padding: "0 10px" }}>or</span>
+              <div style={{ flex: 1, height: "1px", background: "rgba(255, 255, 255, 0.08)" }} />
+            </div>
+
+            <div style={{ fontSize: "11px", color: "#64748b" }}>
+              Drag and drop your <span style={{ color: "#94a3b8", fontWeight: 600 }}>index.html</span> here
+            </div>
+          </div>
+
+          {/* Card 2: Need help? Callout */}
+          <div
+            style={{
+              background: "#0b1222",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              borderRadius: "16px",
+              padding: "18px 20px",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.25)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
               <div
                 style={{
-                  background: "rgba(0, 0, 0, 0.3)",
-                  border: "1px solid var(--border-subtle)",
-                  borderRadius: "10px",
-                  padding: "10px 14px",
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  background: "rgba(56, 189, 248, 0.12)",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "18px",
-                  fontSize: "12px",
-                  fontFamily: "var(--font-mono)",
+                  justifyContent: "center",
                   color: "#38bdf8",
                 }}
               >
-                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {site.hosted_url}
-                </span>
-                <div style={{ display: "flex", gap: "6px" }}>
-                  <button
-                    className="icon-btn"
-                    style={{ width: "28px", height: "28px" }}
-                    onClick={() => handleCopy(site.hosted_url)}
-                    title="Copy URL"
-                  >
-                    <Copy size={13} />
-                  </button>
-                  <a
-                    href={site.hosted_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="icon-btn"
-                    style={{ width: "28px", height: "28px" }}
-                    title="Open in new tab"
-                  >
-                    <ExternalLink size={13} />
-                  </a>
-                </div>
+                <Info size={16} />
               </div>
+              <h4 style={{ fontSize: "14px", fontWeight: 700, color: "#ffffff" }}>
+                Need help?
+              </h4>
             </div>
 
-            {/* Actions Footer */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "14px", borderTop: "1px solid var(--border-subtle)", flexWrap: "wrap", gap: "10px" }}>
-              <div style={{ fontSize: "11px", color: "#64748b" }}>
-                Created: {new Date(site.created_at).toLocaleDateString()}
-              </div>
-
-              <div style={{ display: "flex", gap: "8px" }}>
-                <button
-                  className="btn-secondary"
-                  style={{ padding: "6px 12px", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}
-                  onClick={() => handleOpenDomainSettings(site)}
-                  title="Configure domain and custom URL slug"
-                >
-                  <Settings size={13} color="#60a5fa" />
-                  <span>Domain &amp; URL</span>
-                </button>
-                <button
-                  className="btn-secondary"
-                  style={{ padding: "6px 12px", fontSize: "12px" }}
-                  onClick={() => {
-                    setActiveSite(site);
-                    setPreviewModalOpen(true);
-                  }}
-                >
-                  <Eye size={13} />
-                  <span>Preview</span>
-                </button>
-                <button
-                  className="btn-secondary"
-                  style={{ padding: "6px 12px", fontSize: "12px" }}
-                  onClick={() => handleOpenEditor(site)}
-                >
-                  <Code2 size={13} />
-                  <span>Edit Code</span>
-                </button>
-                <button
-                  className="icon-btn"
-                  style={{ width: "32px", height: "32px", color: "#f87171" }}
-                  onClick={() => handleDelete(site.id)}
-                  title="Delete Website"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </div>
+            <p style={{ color: "#94a3b8", fontSize: "12px", lineHeight: 1.6, margin: 0 }}>
+              Your website must be a single HTML file named <code style={{ color: "#38bdf8" }}>index.html</code> (or a ZIP bundle). It is deployed instantly to the high-performance Nginx static web tier with automatic isolated directory routing.
+            </p>
           </div>
-        ))}
+        </div>
       </div>
 
-      {/* Deploy Website Modal */}
+      {/* Modal 1: + New Website Modal */}
       {modalOpen && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: "720px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#fff" }}>
-                Deploy Static Website
+          <div className="modal-content" style={{ maxWidth: "680px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+              <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: "8px" }}>
+                <Plus size={20} color="#38bdf8" />
+                <span>Deploy New Website</span>
               </h2>
               <button className="icon-btn" onClick={() => setModalOpen(false)}>
                 <X size={18} />
               </button>
             </div>
 
-            {errorMsg && (
-              <div
-                style={{
-                  background: "rgba(239, 68, 68, 0.12)",
-                  border: "1px solid rgba(239, 68, 68, 0.3)",
-                  borderRadius: "10px",
-                  padding: "10px 14px",
-                  marginBottom: "16px",
-                  color: "#f87171",
-                  fontSize: "13px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <AlertCircle size={16} />
-                <span>{errorMsg}</span>
-              </div>
-            )}
-
-            {/* Drag & Drop HTML Upload Zone */}
-            <div
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              style={{
-                border: isDragging ? "2px dashed #3b82f6" : "2px dashed rgba(59, 130, 246, 0.35)",
-                background: isDragging ? "rgba(59, 130, 246, 0.12)" : "rgba(15, 23, 42, 0.6)",
-                borderRadius: "14px",
-                padding: "20px 16px",
-                textAlign: "center",
-                marginBottom: "20px",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-            >
-              <input
-                type="file"
-                accept=".html,.htm"
-                id="deploy-html-upload"
-                style={{ display: "none" }}
-                onChange={handleFileInputChange}
-              />
-              <label htmlFor="deploy-html-upload" style={{ cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-                <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "rgba(59, 130, 246, 0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Upload size={22} color={isDragging ? "#60a5fa" : "#3b82f6"} />
-                </div>
-                <div>
-                  <span style={{ fontWeight: 600, color: "#fff", fontSize: "14px" }}>
-                    {uploadedFileName ? `✓ Loaded: ${uploadedFileName}` : "Drag & drop an HTML file here, or click to browse"}
-                  </span>
-                  <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "3px" }}>
-                    Select any .html or .htm file to auto-populate title, slug, and code
-                  </div>
-                </div>
-              </label>
-            </div>
-
             <form onSubmit={handleCreate}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                <div className="form-group">
-                  <label className="form-label">Website Name</label>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#94a3b8", marginBottom: "6px" }}>
+                    Website Name *
+                  </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. My Portfolio"
-                    className="form-input"
+                    placeholder="e.g. Portfolio"
                     value={siteName}
                     onChange={(e) => setSiteName(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      background: "#0f172a",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      borderRadius: "8px",
+                      color: "#fff",
+                      fontSize: "13px",
+                    }}
                   />
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Subdomain Slug</label>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#94a3b8", marginBottom: "6px" }}>
+                    Subdomain / Slug *
+                  </label>
                   <input
                     type="text"
-                    required
-                    placeholder="e.g. portfolio-demo"
-                    className="form-input"
+                    placeholder="e.g. portfolio"
                     value={subdomain}
                     onChange={(e) => setSubdomain(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      background: "#0f172a",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      borderRadius: "8px",
+                      color: "#fff",
+                      fontSize: "13px",
+                    }}
                   />
                 </div>
               </div>
 
-              <div className="form-group" style={{ marginBottom: "16px" }}>
-                <label className="form-label">Custom Domain (optional)</label>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#94a3b8", marginBottom: "6px" }}>
+                  Custom Domain (Optional)
+                </label>
                 <input
                   type="text"
-                  placeholder="e.g. site.mycompany.io or app.portfolio.dev"
-                  className="form-input"
+                  placeholder="e.g. portfolio.mybrand.com"
                   value={customDomain}
                   onChange={(e) => setCustomDomain(e.target.value)}
-                />
-                <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
-                  Live URL will be: <code style={{ color: "#60a5fa" }}>/sites/&lt;username&gt;/{subdomain || "your-slug"}/</code>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Description (optional)</label>
-                <input
-                  type="text"
-                  placeholder="Short description of website"
-                  className="form-input"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    background: "#0f172a",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: "8px",
+                    color: "#fff",
+                    fontSize: "13px",
+                  }}
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label">HTML Content (index.html)</label>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#94a3b8", marginBottom: "6px" }}>
+                  index.html Source Code
+                </label>
                 <textarea
-                  className="form-textarea"
-                  style={{ minHeight: "220px", fontSize: "12px", fontFamily: "var(--font-mono)" }}
+                  rows={8}
                   value={htmlContent}
                   onChange={(e) => setHtmlContent(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    background: "#050811",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: "8px",
+                    color: "#38bdf8",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "12px",
+                    resize: "vertical",
+                  }}
                 />
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "24px" }}>
                 <button type="button" className="btn-secondary" onClick={() => setModalOpen(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
-                  Deploy to EC2-2
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  style={{
+                    background: "linear-gradient(135deg, #3b82f6 0%, #a855f7 100%)",
+                    border: "none",
+                    borderRadius: "8px",
+                    color: "#fff",
+                    padding: "10px 22px",
+                    fontWeight: 700,
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {isSubmitting ? "Deploying..." : "Deploy Website"}
                 </button>
               </div>
             </form>
@@ -653,207 +1288,165 @@ export default function WebHostingPage() {
         </div>
       )}
 
-      {/* In-Browser Live Code Editor Modal */}
+      {/* Modal 2: Edit HTML Source */}
       {editModalOpen && activeSite && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: "800px" }}>
+          <div className="modal-content" style={{ maxWidth: "780px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <div>
-                <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#fff" }}>
-                  Edit {activeSite.site_name}
-                </h2>
-                <div style={{ fontSize: "12px", color: "#60a5fa" }}>
-                  Editing index.html live on EC2-2 Nginx tier
-                </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Code2 size={20} color="#a855f7" />
+                <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>
+                  Edit Code: {activeSite.site_name}
+                </h3>
               </div>
               <button className="icon-btn" onClick={() => setEditModalOpen(false)}>
                 <X size={18} />
               </button>
             </div>
 
-            {/* Quick Upload / Drag & Drop in Editor Modal */}
-            <div
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              style={{
-                border: isDragging ? "2px dashed #3b82f6" : "2px dashed rgba(59, 130, 246, 0.25)",
-                background: isDragging ? "rgba(59, 130, 246, 0.1)" : "rgba(15, 23, 42, 0.4)",
-                borderRadius: "10px",
-                padding: "12px",
-                textAlign: "center",
-                marginBottom: "14px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "10px",
-              }}
-            >
-              <input
-                type="file"
-                accept=".html,.htm"
-                id="edit-html-upload"
-                style={{ display: "none" }}
-                onChange={handleFileInputChange}
-              />
-              <label htmlFor="edit-html-upload" style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#94a3b8" }}>
-                <Upload size={16} color="#60a5fa" />
-                <span>
-                  {uploadedFileName ? `Replaced with: ${uploadedFileName}` : "Drag & drop new HTML file to replace code, or click to upload"}
-                </span>
-              </label>
-            </div>
-
-            <div className="form-group">
-              <textarea
-                className="form-textarea"
-                style={{ minHeight: "340px", fontSize: "12px", color: "#38bdf8" }}
-                value={htmlContent}
-                onChange={(e) => setHtmlContent(e.target.value)}
-              />
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
-              <button className="btn-secondary" onClick={() => setEditModalOpen(false)}>
-                Cancel
-              </button>
-              <button className="btn-primary" onClick={handleUpdate}>
-                Save &amp; Deploy Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Live Preview Modal (iFrame) */}
-      {previewModalOpen && activeSite && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: "900px", padding: "16px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <Globe size={18} color="#3b82f6" />
-                <span style={{ fontWeight: 700, color: "#fff" }}>Live Preview: {activeSite.site_name}</span>
+            <form onSubmit={handleSaveEdit}>
+              <div style={{ marginBottom: "16px" }}>
+                <textarea
+                  rows={16}
+                  value={htmlContent}
+                  onChange={(e) => setHtmlContent(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "14px",
+                    background: "#050811",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: "10px",
+                    color: "#38bdf8",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "12px",
+                    lineHeight: 1.5,
+                  }}
+                />
               </div>
-              <button className="icon-btn" onClick={() => setPreviewModalOpen(false)}>
-                <X size={18} />
-              </button>
-            </div>
 
-            <div style={{ border: "1px solid var(--border-subtle)", borderRadius: "10px", overflow: "hidden", height: "500px", background: "#fff" }}>
-              <iframe
-                src={activeSite.hosted_url}
-                title={activeSite.site_name}
-                style={{ width: "100%", height: "100%", border: "none" }}
-              />
-            </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                <button type="button" className="btn-secondary" onClick={() => setEditModalOpen(false)}>
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  style={{
+                    background: "linear-gradient(135deg, #3b82f6 0%, #a855f7 100%)",
+                    border: "none",
+                    borderRadius: "8px",
+                    color: "#fff",
+                    padding: "10px 22px",
+                    fontWeight: 700,
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {isSubmitting ? "Saving..." : "Save & Redeploy"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
-      {/* Domain & URL Settings Modal */}
+
+      {/* Modal 3: Custom Domain & Routing Settings */}
       {domainModalOpen && domainSite && (
         <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: "580px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="modal-content" style={{ maxWidth: "560px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <Settings size={20} color="#38bdf8" />
-                <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#fff" }}>
-                  Domain &amp; URL Settings
-                </h2>
+                <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>
+                  Domain &amp; Routing: {domainSite.site_name}
+                </h3>
               </div>
               <button className="icon-btn" onClick={() => setDomainModalOpen(false)}>
                 <X size={18} />
               </button>
             </div>
 
-            {domainErrorMsg && (
-              <div
-                style={{
-                  background: "rgba(239, 68, 68, 0.12)",
-                  border: "1px solid rgba(239, 68, 68, 0.3)",
-                  borderRadius: "10px",
-                  padding: "10px 14px",
-                  marginBottom: "16px",
-                  color: "#f87171",
-                  fontSize: "13px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <AlertCircle size={16} />
-                <span>{domainErrorMsg}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSaveDomainSettings}>
-              <div className="form-group" style={{ marginBottom: "16px" }}>
-                <label className="form-label">Website Name</label>
+            <form onSubmit={handleSaveDomain}>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#94a3b8", marginBottom: "6px" }}>
+                  Website Name
+                </label>
                 <input
                   type="text"
-                  required
-                  className="form-input"
                   value={editSiteName}
                   onChange={(e) => setEditSiteName(e.target.value)}
-                  placeholder="e.g. Agentsentry Case Study"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    background: "#0f172a",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: "8px",
+                    color: "#fff",
+                    fontSize: "13px",
+                  }}
                 />
               </div>
 
-              <div className="form-group" style={{ marginBottom: "16px" }}>
-                <label className="form-label">Subdomain Slug (URL Path)</label>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#94a3b8", marginBottom: "6px" }}>
+                  Subdomain Route
+                </label>
                 <input
                   type="text"
-                  required
-                  className="form-input"
                   value={editSubdomain}
                   onChange={(e) => setEditSubdomain(e.target.value)}
-                  placeholder="e.g. agentsentry-case-study"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    background: "#0f172a",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: "8px",
+                    color: "#fff",
+                    fontSize: "13px",
+                  }}
                 />
-                <div style={{ fontSize: "12px", color: "#60a5fa", marginTop: "6px", fontFamily: "var(--font-mono)" }}>
-                  Live URL: /sites/&lt;username&gt;/{editSubdomain.toLowerCase().trim().replace(/[^a-z0-9-]/g, "-")}/
-                </div>
               </div>
 
-              <div className="form-group" style={{ marginBottom: "16px" }}>
-                <label className="form-label">Custom Domain (Optional)</label>
+              <div style={{ marginBottom: "20px" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#94a3b8", marginBottom: "6px" }}>
+                  Custom Domain CNAME
+                </label>
                 <input
                   type="text"
-                  className="form-input"
+                  placeholder="e.g. app.mydomain.com"
                   value={editCustomDomain}
                   onChange={(e) => setEditCustomDomain(e.target.value)}
-                  placeholder="e.g. site.mycompany.io or app.agentsentry.ai"
-                />
-                <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
-                  Point your DNS CNAME record to your MiniAWS Data Tier public IP or hostname.
-                </div>
-              </div>
-
-              <div className="form-group" style={{ marginBottom: "20px" }}>
-                <label className="form-label">Description (Optional)</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  placeholder="Website description"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    background: "#0f172a",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: "8px",
+                    color: "#fff",
+                    fontSize: "13px",
+                  }}
                 />
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={() => setDomainModalOpen(false)}
-                  disabled={domainUpdating}
-                >
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                <button type="button" className="btn-secondary" onClick={() => setDomainModalOpen(false)}>
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary"
-                  disabled={domainUpdating}
+                  disabled={isSubmitting}
+                  style={{
+                    background: "linear-gradient(135deg, #3b82f6 0%, #a855f7 100%)",
+                    border: "none",
+                    borderRadius: "8px",
+                    color: "#fff",
+                    padding: "10px 22px",
+                    fontWeight: 700,
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
                 >
-                  {domainUpdating ? "Saving..." : "Save Domain Settings"}
+                  {isSubmitting ? "Saving..." : "Update Routing"}
                 </button>
               </div>
             </form>
