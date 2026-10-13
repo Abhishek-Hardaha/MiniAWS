@@ -1,6 +1,8 @@
 # Credentials and Keys
 *.pem
 *.key
+*.rdp
+connect-rdp.bat
 .env
 .env.local
 
