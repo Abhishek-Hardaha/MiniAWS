@@ -18,11 +18,6 @@ import {
   HardDrive,
   Zap,
   TrendingUp,
-  Search,
-  Copy,
-  Check,
-  ShieldCheck,
-  Sparkles
 } from "lucide-react";
 import { getExecutionLogs, getMonitoringStats, getSystemTiers } from "@/lib/api";
 import AreaTimelineChart, { ChartDataPoint } from "@/components/charts/AreaTimelineChart";
@@ -41,16 +36,7 @@ export default function MonitoringPage() {
   const [tiers, setTiers] = useState<any[]>([]);
   const [activeLog, setActiveLog] = useState<any | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [timeRange, setTimeRange] = useState<"15m" | "1h" | "24h" | "7d">("1h");
-  const [copiedLog, setCopiedLog] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-
-  const showToast = (message: string, type: "success" | "error" = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
 
   const loadData = () => {
     setLoading(true);
@@ -130,95 +116,24 @@ export default function MonitoringPage() {
     },
   ];
 
-  // Filter logs by status and search query
-  const filteredLogs = logs.filter((log) => {
-    if (statusFilter && log.status !== statusFilter) return false;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      const nameMatch = log.function_name?.toLowerCase().includes(q);
-      const triggerMatch = log.trigger_type?.toLowerCase().includes(q);
-      const idMatch = log.id?.toLowerCase().includes(q);
-      if (!nameMatch && !triggerMatch && !idMatch) return false;
-    }
-    return true;
-  });
-
-  const handleCopyLogOutput = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedLog(true);
-    showToast("Log output copied to clipboard!", "success");
-    setTimeout(() => setCopiedLog(false), 2000);
-  };
-
   return (
     <div className="content-wrapper">
-      {/* Toast Notification */}
-      {toast && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "24px",
-            right: "24px",
-            zIndex: 9999,
-            background: toast.type === "success" ? "rgba(16, 185, 129, 0.95)" : "rgba(239, 68, 68, 0.95)",
-            color: "#fff",
-            padding: "12px 20px",
-            borderRadius: "10px",
-            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            fontSize: "13px",
-            fontWeight: 600,
-            animation: "fadeIn 0.2s ease-out",
-          }}
-        >
-          {toast.type === "success" ? <CheckCircle size={16} /> : <XCircle size={16} />}
-          <span>{toast.message}</span>
-        </div>
-      )}
-
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px", flexWrap: "wrap", gap: "16px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
         <div>
           <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#fff", display: "flex", alignItems: "center", gap: "10px" }}>
             <BarChart3 size={26} color="#ec4899" />
-            <span>CloudWatch Telemetry &amp; Execution Observability</span>
+            Function Telemetry &amp; CloudWatch Dashboard
           </h1>
           <p style={{ color: "#94a3b8", fontSize: "14px", marginTop: "4px" }}>
-            Real-time execution latency curves, cold start telemetry, and 3-Tier Multi-EC2 node health.
+            Real-time execution telemetry, duration charts, invocation breakdown, and 3-Tier EC2 instance health.
           </p>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          {/* Time range selector tabs */}
-          <div style={{ display: "flex", background: "rgba(255, 255, 255, 0.04)", borderRadius: "8px", padding: "3px", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
-            {(["15m", "1h", "24h", "7d"] as const).map((range) => (
-              <button
-                key={range}
-                onClick={() => setTimeRange(range)}
-                style={{
-                  background: timeRange === range ? "rgba(236, 72, 153, 0.25)" : "transparent",
-                  color: timeRange === range ? "#f472b6" : "#94a3b8",
-                  border: timeRange === range ? "1px solid rgba(236, 72, 153, 0.4)" : "1px solid transparent",
-                  borderRadius: "6px",
-                  padding: "4px 10px",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                {range === "15m" ? "15m Live" : range === "1h" ? "1 Hour" : range === "24h" ? "24 Hours" : "7 Days"}
-              </button>
-            ))}
-          </div>
-
-          <button className="btn-secondary" onClick={loadData}>
-            <RefreshCw size={15} className={loading ? "spin" : ""} />
-            <span>Refresh</span>
-          </button>
-        </div>
+        <button className="btn-secondary" onClick={loadData}>
+          <RefreshCw size={15} className={loading ? "spin" : ""} />
+          <span>Refresh Metrics</span>
+        </button>
       </div>
 
       {/* 4 Top Metric Cards */}
@@ -231,7 +146,7 @@ export default function MonitoringPage() {
             {stats.total_invocations.toLocaleString()}
           </div>
           <div style={{ fontSize: "11px", color: "#34d399", marginTop: "4px" }}>
-            Synchronized with PostgreSQL
+            Real metrics recorded in PostgreSQL
           </div>
         </div>
 
@@ -255,7 +170,7 @@ export default function MonitoringPage() {
             {stats.avg_duration_ms} ms
           </div>
           <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
-            Dedicated Python 3 runner on EC2-3
+            Fast cold-start runner execution
           </div>
         </div>
 
@@ -267,7 +182,7 @@ export default function MonitoringPage() {
             {stats.error_count}
           </div>
           <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
-            Sandboxed exception isolation
+            Isolated process sandbox execution
           </div>
         </div>
       </div>
@@ -312,18 +227,13 @@ export default function MonitoringPage() {
       {/* 3-Tier EC2 Architecture Real-time Hardware & Daemon Health */}
       <div className="panel-card" style={{ marginBottom: "28px", padding: "20px 24px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-          <div>
-            <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: "10px" }}>
-              <Server size={18} color="#3b82f6" />
-              <span>Three-Tier Multi-EC2 Telemetry &amp; System Health</span>
-            </h2>
-            <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "2px" }}>
-              AWS VPC Subnet Interconnect • eu-central-1 Frankfurt (AZ 1a)
-            </div>
-          </div>
+          <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: "10px" }}>
+            <Server size={18} color="#3b82f6" />
+            <span>Three-Tier Multi-EC2 Telemetry &amp; System Health</span>
+          </h2>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#34d399", fontWeight: 600 }}>
             <span className="pulse-live-dot" />
-            <span>Multi-Tier Fabric Active (3/3 Healthy)</span>
+            <span>Multi-Tier Fabric Active</span>
           </div>
         </div>
 
@@ -332,7 +242,7 @@ export default function MonitoringPage() {
           <div className="tier-health-card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
               <div style={{ fontWeight: 700, fontSize: "14px", color: "#fff" }}>EC2 Instance 1</div>
-              <span className="status-pill status-success">0.4 ms ping</span>
+              <span className="status-pill status-success">Online</span>
             </div>
             <div style={{ fontSize: "12px", color: "#60a5fa", fontWeight: 600, marginBottom: "6px" }}>
               Application Tier • 35.159.95.208
@@ -348,7 +258,7 @@ export default function MonitoringPage() {
           <div className="tier-health-card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
               <div style={{ fontWeight: 700, fontSize: "14px", color: "#fff" }}>EC2 Instance 2</div>
-              <span className="status-pill status-success">0.8 ms ping</span>
+              <span className="status-pill status-success">Online</span>
             </div>
             <div style={{ fontSize: "12px", color: "#14b8a6", fontWeight: 600, marginBottom: "6px" }}>
               Data Tier • 3.127.237.130
@@ -364,7 +274,7 @@ export default function MonitoringPage() {
           <div className="tier-health-card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
               <div style={{ fontWeight: 700, fontSize: "14px", color: "#fff" }}>EC2 Instance 3</div>
-              <span className="status-pill status-success">0.3 ms ping</span>
+              <span className="status-pill status-success">Online</span>
             </div>
             <div style={{ fontSize: "12px", color: "#c084fc", fontWeight: 600, marginBottom: "6px" }}>
               Execution Tier • 3.71.47.123
@@ -380,44 +290,24 @@ export default function MonitoringPage() {
 
       {/* CloudWatch Logs Stream Table */}
       <div className="panel-card" style={{ padding: 0, overflow: "hidden" }}>
-        <div style={{ padding: "18px 24px", borderBottom: "1px solid var(--border-subtle)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-          <div>
-            <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: "8px" }}>
-              <Terminal size={18} color="#34d399" />
-              <span>CloudWatch Execution Logs Stream</span>
-            </h2>
-            <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "2px" }}>
-              Showing {filteredLogs.length} of {logs.length} invocation records
-            </div>
-          </div>
+        <div style={{ padding: "18px 24px", borderBottom: "1px solid var(--border-subtle)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: "8px" }}>
+            <Terminal size={18} color="#34d399" />
+            <span>CloudWatch Execution Logs Stream</span>
+          </h2>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            {/* Search filter input */}
-            <div style={{ position: "relative" }}>
-              <Search size={14} color="#64748b" style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)" }} />
-              <input
-                type="text"
-                placeholder="Search function name..."
-                className="form-input"
-                style={{ paddingLeft: "32px", paddingRight: "10px", paddingTop: "6px", paddingBottom: "6px", fontSize: "12px", width: "190px" }}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <Filter size={14} color="#94a3b8" />
-              <select
-                className="form-select"
-                style={{ padding: "6px 12px", fontSize: "12px" }}
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="">All Statuses</option>
-                <option value="success">Success Only</option>
-                <option value="error">Errors Only</option>
-              </select>
-            </div>
+            <Filter size={15} color="#94a3b8" />
+            <select
+              className="form-select"
+              style={{ padding: "6px 12px", fontSize: "12px" }}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">All Statuses</option>
+              <option value="success">Success Only</option>
+              <option value="error">Errors Only</option>
+            </select>
           </div>
         </div>
 
@@ -427,7 +317,7 @@ export default function MonitoringPage() {
               <tr>
                 <th>Timestamp</th>
                 <th>Function</th>
-                <th>Trigger Source</th>
+                <th>Trigger</th>
                 <th>Status</th>
                 <th>Duration</th>
                 <th>Memory</th>
@@ -435,14 +325,14 @@ export default function MonitoringPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredLogs.length === 0 ? (
+              {logs.length === 0 ? (
                 <tr>
                   <td colSpan={7} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
                     No execution logs matching filters.
                   </td>
                 </tr>
               ) : (
-                filteredLogs.map((log) => {
+                logs.map((log) => {
                   const isSuccess = log.status === "success";
                   return (
                     <tr key={log.id}>
@@ -452,14 +342,12 @@ export default function MonitoringPage() {
                       <td style={{ fontWeight: 600, color: "#fff" }}>
                         {log.function_name}
                       </td>
-                      <td style={{ color: "#94a3b8", fontSize: "12px" }}>
-                        <span className="cloud-metric-chip cloud-metric-purple" style={{ fontSize: "10px", padding: "2px 6px" }}>
-                          {log.trigger_type || "manual"}
-                        </span>
+                      <td style={{ color: "#94a3b8", fontSize: "12px", textTransform: "capitalize" }}>
+                        {log.trigger_type}
                       </td>
                       <td>
                         <span className={`status-pill ${isSuccess ? "status-success" : "status-error"}`}>
-                          {log.status.toUpperCase()}
+                          {log.status}
                         </span>
                       </td>
                       <td style={{ fontFamily: "var(--font-mono)", color: "#38bdf8" }}>
@@ -473,7 +361,7 @@ export default function MonitoringPage() {
                           className="icon-btn"
                           style={{ width: "32px", height: "32px" }}
                           onClick={() => setActiveLog(log)}
-                          title="View Complete CloudWatch Logs"
+                          title="View Logs"
                         >
                           <Eye size={15} />
                         </button>
@@ -495,7 +383,7 @@ export default function MonitoringPage() {
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <Terminal size={18} color="#34d399" />
                 <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>
-                  Execution Record: {activeLog.function_name}
+                  Execution Log: {activeLog.function_name} ({activeLog.id})
                 </h3>
               </div>
               <button className="icon-btn" onClick={() => setActiveLog(null)}>
@@ -514,33 +402,13 @@ export default function MonitoringPage() {
               </div>
               <div style={{ background: "rgba(255,255,255,0.03)", padding: "10px", borderRadius: "8px" }}>
                 <div style={{ fontSize: "11px", color: "#64748b" }}>Memory Footprint</div>
-                <div style={{ fontWeight: 600, color: "#fff" }}>{activeLog.memory_used_mb || 16} MB</div>
+                <div style={{ fontWeight: 600, color: "#fff" }}>{activeLog.memory_used_mb} MB</div>
               </div>
             </div>
 
             {/* Log Output Stream */}
             <div className="form-group">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                <label className="form-label" style={{ margin: 0 }}>Captured Output (STDOUT / Traceback)</label>
-                <button
-                  onClick={() => handleCopyLogOutput(activeLog.stdout || activeLog.stderr || "")}
-                  style={{
-                    background: "rgba(255, 255, 255, 0.06)",
-                    border: "none",
-                    borderRadius: "6px",
-                    padding: "3px 8px",
-                    fontSize: "11px",
-                    color: copiedLog ? "#34d399" : "#94a3b8",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    cursor: "pointer",
-                  }}
-                >
-                  {copiedLog ? <Check size={12} /> : <Copy size={12} />}
-                  <span>{copiedLog ? "Copied" : "Copy Output"}</span>
-                </button>
-              </div>
+              <label className="form-label">Captured Output (STDOUT / Traceback)</label>
               <pre
                 style={{
                   background: "#050811",
@@ -561,7 +429,7 @@ export default function MonitoringPage() {
 
             {activeLog.return_value && (
               <div className="form-group">
-                <label className="form-label">Return Payload</label>
+                <label className="form-label">Return Value</label>
                 <pre
                   style={{
                     background: "#050811",
@@ -571,12 +439,9 @@ export default function MonitoringPage() {
                     fontSize: "12px",
                     color: "#38bdf8",
                     fontFamily: "var(--font-mono)",
-                    whiteSpace: "pre-wrap",
                   }}
                 >
-                  {typeof activeLog.return_value === "object"
-                    ? JSON.stringify(activeLog.return_value, null, 2)
-                    : activeLog.return_value}
+                  {activeLog.return_value}
                 </pre>
               </div>
             )}

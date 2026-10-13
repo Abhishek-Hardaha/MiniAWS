@@ -89,110 +89,36 @@ export default function HomePage() {
 
   return (
     <div className="content-wrapper">
-      {/* Modern AWS Control Center Command Hero */}
-      <section
-        style={{
-          background: "linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(10, 16, 30, 0.95) 100%)",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
-          borderRadius: "20px",
-          padding: "28px 32px",
-          marginBottom: "28px",
-          position: "relative",
-          overflow: "hidden",
-          boxShadow: "0 16px 40px rgba(0, 0, 0, 0.5)",
-        }}
-      >
-        <div style={{ position: "relative", zIndex: 2, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "20px" }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-              <span className="cloud-metric-chip cloud-metric-emerald">
-                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 6px #10b981" }} />
-                <span>AWS Fabric: eu-central-1</span>
-              </span>
-              <span className="cloud-metric-chip cloud-metric-cyan">
-                <span>3 Nodes Active</span>
-              </span>
-              <span style={{ fontSize: "12px", color: "#64748b" }}>
-                Tenant: <strong style={{ color: "#cbd5e1" }}>{data?.user?.email || "tenant@miniaws.cloud"}</strong>
-              </span>
-            </div>
-
-            <h1 style={{ fontSize: "28px", fontWeight: 800, color: "#ffffff", letterSpacing: "-0.02em", marginBottom: "8px" }}>
-              Welcome back, {userName} <span style={{ fontSize: "24px" }}>👋</span>
-            </h1>
-            <p style={{ color: "#94a3b8", fontSize: "14px", lineHeight: "1.6", maxWidth: "580px" }}>
-              Your isolated multi-tier cloud environment is active and running across 3 governed AWS EC2 nodes. Build serverless micro-functions, deploy static websites with SSL, and monitor real-time telemetry.
-            </p>
-
-            {/* Quick Launch Actions Dock */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "20px" }}>
-              <Link href="/storage" className="cloud-action-btn cloud-action-btn-primary">
-                <Upload size={14} />
-                <span>Upload to S3</span>
-              </Link>
-              <Link href="/web-hosting" className="cloud-action-btn">
-                <Globe size={14} color="#38bdf8" />
-                <span>Deploy Web Host</span>
-              </Link>
-              <Link href="/functions" className="cloud-action-btn">
-                <Code2 size={14} color="#a855f7" />
-                <span>Create Lambda</span>
-              </Link>
-              <Link href="/api-gateway" className="cloud-action-btn">
-                <Share2 size={14} color="#f97316" />
-                <span>Expose API Route</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Quick System Telemetry Pulse Box */}
-          <div
-            style={{
-              background: "rgba(0, 0, 0, 0.35)",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
-              borderRadius: "14px",
-              padding: "16px 20px",
-              minWidth: "240px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-            }}
-          >
-            <div style={{ fontSize: "11px", color: "#64748b", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
-              Infrastructure Health
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "12px", color: "#cbd5e1" }}>EC2-1 App Tier:</span>
-              <span style={{ fontSize: "12px", color: "#34d399", fontWeight: 700 }}>0.4ms ping</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "12px", color: "#cbd5e1" }}>EC2-2 Data Tier:</span>
-              <span style={{ fontSize: "12px", color: "#38bdf8", fontWeight: 700 }}>0.8ms ping</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "12px", color: "#cbd5e1" }}>EC2-3 Lambda Tier:</span>
-              <span style={{ fontSize: "12px", color: "#c084fc", fontWeight: 700 }}>0.3ms cold-start</span>
-            </div>
-          </div>
+      {/* Hero Card */}
+      <section className="hero-card">
+        <div className="hero-left">
+          <h1 className="hero-title">
+            {userName} <span style={{ fontSize: "28px" }}>👋</span>
+          </h1>
+          <p className="hero-sub">
+            Your multi-tier cloud environment is active and running.<br />
+            Build, deploy, monitor serverless functions and host websites.
+          </p>
         </div>
+
+        {/* Hero Background Art */}
+        <div
+          className="hero-bg-art"
+          style={{ backgroundImage: "url('/bg-cloud.png')" }}
+        />
       </section>
 
-      {/* 5 Quick Service Cards Grid with Live Actual Metrics */}
-      <div className="services-grid" style={{ marginBottom: "28px" }}>
+      {/* 5 Quick Service Cards Grid */}
+      <div className="services-grid">
         {/* 1. Storage */}
-        <Link href="/storage" className="service-card card-storage" style={{ textDecoration: "none" }}>
+        <Link href="/storage" className="service-card card-storage">
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-              <div className="card-icon-box">
-                <Database size={22} color="#14b8a6" />
-              </div>
-              <span className="cloud-metric-chip cloud-metric-emerald">
-                {formatStorage(quotas.storage_used_bytes)} Used
-              </span>
+            <div className="card-icon-box">
+              <Database size={22} color="#14b8a6" />
             </div>
-            <div className="card-title">S3 Storage</div>
+            <div className="card-title">Storage</div>
             <div className="card-desc">
-              Multi-bucket blob storage with presigned URLs &amp; encryption.
+              Upload, manage and access your files securely.
             </div>
           </div>
           <div className="card-arrow-btn">
@@ -201,19 +127,14 @@ export default function HomePage() {
         </Link>
 
         {/* 2. Web Hosting */}
-        <Link href="/web-hosting" className="service-card card-web" style={{ textDecoration: "none" }}>
+        <Link href="/web-hosting" className="service-card card-web">
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-              <div className="card-icon-box">
-                <Globe size={22} color="#3b82f6" />
-              </div>
-              <span className="cloud-metric-chip cloud-metric-cyan">
-                {quotas.websites_used} / {quotas.websites_max} Sites
-              </span>
+            <div className="card-icon-box">
+              <Globe size={22} color="#3b82f6" />
             </div>
             <div className="card-title">Web Hosting</div>
             <div className="card-desc">
-              Static HTML hosting with Nginx custom domains &amp; SSL.
+              Host your HTML website with a single upload.
             </div>
           </div>
           <div className="card-arrow-btn">
@@ -222,19 +143,14 @@ export default function HomePage() {
         </Link>
 
         {/* 3. Serverless Functions */}
-        <Link href="/functions" className="service-card card-functions" style={{ textDecoration: "none" }}>
+        <Link href="/functions" className="service-card card-functions">
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-              <div className="card-icon-box">
-                <Code2 size={22} color="#8b5cf6" />
-              </div>
-              <span className="cloud-metric-chip cloud-metric-purple">
-                {quotas.functions_used} Active Lambdas
-              </span>
+            <div className="card-icon-box">
+              <Code2 size={22} color="#8b5cf6" />
             </div>
-            <div className="card-title">Serverless Lambdas</div>
+            <div className="card-title">Serverless Functions</div>
             <div className="card-desc">
-              Sub-millisecond Python 3.9 MicroVMs with automated crons.
+              Run your Python code on demand or on schedule.
             </div>
           </div>
           <div className="card-arrow-btn">
@@ -243,19 +159,14 @@ export default function HomePage() {
         </Link>
 
         {/* 4. API Gateway */}
-        <Link href="/api-gateway" className="service-card card-gateway" style={{ textDecoration: "none" }}>
+        <Link href="/api-gateway" className="service-card card-gateway">
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-              <div className="card-icon-box">
-                <Share2 size={22} color="#f97316" />
-              </div>
-              <span className="cloud-metric-chip cloud-metric-amber">
-                {quotas.api_requests_today} Calls Today
-              </span>
+            <div className="card-icon-box">
+              <Share2 size={22} color="#f97316" />
             </div>
             <div className="card-title">API Gateway</div>
             <div className="card-desc">
-              Managed HTTP routes with rate limiting &amp; API key protection.
+              Expose your functions as secure APIs.
             </div>
           </div>
           <div className="card-arrow-btn">
@@ -264,19 +175,14 @@ export default function HomePage() {
         </Link>
 
         {/* 5. Monitoring */}
-        <Link href="/monitoring" className="service-card card-monitoring" style={{ textDecoration: "none" }}>
+        <Link href="/monitoring" className="service-card card-monitoring">
           <div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-              <div className="card-icon-box">
-                <BarChart3 size={22} color="#ec4899" />
-              </div>
-              <span className="cloud-metric-chip cloud-metric-rose">
-                99.98% Health
-              </span>
+            <div className="card-icon-box">
+              <BarChart3 size={22} color="#ec4899" />
             </div>
-            <div className="card-title">CloudWatch Telemetry</div>
+            <div className="card-title">Monitoring</div>
             <div className="card-desc">
-              Live latency sparklines, system event logs &amp; performance.
+              Track performance, telemetry, logs and usage.
             </div>
           </div>
           <div className="card-arrow-btn">

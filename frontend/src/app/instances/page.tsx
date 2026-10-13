@@ -18,11 +18,7 @@ import {
   Layers,
   ChevronRight,
   Info,
-  ShieldAlert,
-  X,
-  CheckCircle,
-  AlertCircle,
-  Key
+  ShieldAlert
 } from "lucide-react";
 import { getEC2Instances, getRdpDownloadUrl } from "@/lib/api";
 import RadialProgressGauge from "@/components/charts/RadialProgressGauge";
@@ -32,13 +28,6 @@ export default function InstancesPage() {
   const [loading, setLoading] = useState(true);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"fleet" | "rdp-guide">("fleet");
-  const [activeRdpModal, setActiveRdpModal] = useState<any | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-
-  const showToast = (message: string, type: "success" | "error" = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
 
   const fetchInstances = () => {
     setLoading(true);
@@ -62,7 +51,6 @@ export default function InstancesPage() {
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     setCopiedText(label);
-    showToast(`Copied ${label} to clipboard!`, "success");
     setTimeout(() => setCopiedText(null), 2500);
   };
 
@@ -370,34 +358,26 @@ export default function InstancesPage() {
                 {/* Quick Action Buttons */}
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   {/* Connect via RDP button */}
-                  <button
-                    onClick={() => {
-                      setActiveRdpModal(instance);
-                      // Trigger download automatically
-                      const link = document.createElement("a");
-                      link.href = getRdpDownloadUrl(instance.id);
-                      link.download = `${instance.id}.rdp`;
-                      link.click();
-                      showToast(`Downloaded ${instance.id}.rdp connection file!`, "success");
-                    }}
+                  <a
+                    href={getRdpDownloadUrl(instance.id)}
+                    download={`${instance.id}.rdp`}
                     className="primary-btn"
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: "8px",
+                      textDecoration: "none",
                       fontSize: "13px",
                       padding: "8px 16px",
                       background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
                       boxShadow: "0 0 15px rgba(37, 99, 235, 0.4)",
-                      cursor: "pointer",
-                      border: "none",
                     }}
-                    title="Connect and download pre-configured Windows Remote Desktop file"
+                    title="Download pre-configured Windows Remote Desktop file"
                   >
                     <Monitor size={15} />
                     <span>Connect RDP</span>
                     <Download size={13} style={{ opacity: 0.8 }} />
-                  </button>
+                  </a>
 
                   {/* Copy SSH command */}
                   <button
@@ -544,117 +524,6 @@ export default function InstancesPage() {
           );
         })}
       </div>
-
-      {/* RDP Quick Connect Modal */}
-      {activeRdpModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{ maxWidth: "560px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <Monitor size={20} color="#38bdf8" />
-                <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#fff" }}>
-                  Remote Desktop: {activeRdpModal.name.split(":")[0]}
-                </h2>
-              </div>
-              <button className="icon-btn" onClick={() => setActiveRdpModal(null)}>
-                <X size={18} />
-              </button>
-            </div>
-
-            <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: "10px", padding: "16px", marginBottom: "18px", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <div style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "8px" }}>
-                Pre-configured <code>.rdp</code> profile downloaded automatically. You can also connect via mstsc command line:
-              </div>
-              <div
-                style={{
-                  background: "rgba(15, 23, 42, 0.8)",
-                  borderRadius: "8px",
-                  padding: "10px 14px",
-                  fontFamily: "var(--font-mono)",
-                  fontSize: "12px",
-                  color: "#38bdf8",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <span>mstsc /v:{activeRdpModal.public_ip}:3389</span>
-                <button
-                  className="icon-btn"
-                  style={{ width: "24px", height: "24px" }}
-                  onClick={() => copyToClipboard(`mstsc /v:${activeRdpModal.public_ip}:3389`, "mstsc")}
-                >
-                  <Copy size={12} />
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px", fontSize: "12px" }}>
-              <div style={{ background: "rgba(255,255,255,0.02)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.04)" }}>
-                <div style={{ color: "#64748b", fontWeight: 600 }}>USERNAME</div>
-                <div style={{ color: "#fff", fontWeight: 700, marginTop: "4px" }}>ec2-user</div>
-              </div>
-              <div style={{ background: "rgba(255,255,255,0.02)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.04)" }}>
-                <div style={{ color: "#64748b", fontWeight: 600 }}>PASSWORD</div>
-                <div style={{ marginTop: "4px" }}>
-                  <a href="/admin-stats" style={{ color: "#38bdf8", fontWeight: 700, textDecoration: "underline" }}>
-                    🔒 View in Admin Stats
-                  </a>
-                </div>
-              </div>
-              <div style={{ background: "rgba(255,255,255,0.02)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.04)" }}>
-                <div style={{ color: "#64748b", fontWeight: 600 }}>DESKTOP SESSION</div>
-                <div style={{ color: "#34d399", fontWeight: 700, marginTop: "4px" }}>XFCE 4.18 / Xorg</div>
-              </div>
-              <div style={{ background: "rgba(255,255,255,0.02)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.04)" }}>
-                <div style={{ color: "#64748b", fontWeight: 600 }}>PUBLIC PORT</div>
-                <div style={{ color: "#fbbf24", fontWeight: 700, marginTop: "4px" }}>TCP 3389 (Inbound SG)</div>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-              <a
-                href={getRdpDownloadUrl(activeRdpModal.id)}
-                download={`${activeRdpModal.id}.rdp`}
-                className="secondary-btn"
-                style={{ display: "flex", alignItems: "center", gap: "6px", textDecoration: "none" }}
-              >
-                <Download size={14} />
-                <span>Download .RDP Again</span>
-              </a>
-              <button className="primary-btn" onClick={() => setActiveRdpModal(null)}>
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Floating Toast */}
-      {toast && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "24px",
-            right: "24px",
-            zIndex: 9999,
-            background: toast.type === "success" ? "rgba(16, 185, 129, 0.95)" : "rgba(239, 68, 68, 0.95)",
-            color: "#fff",
-            padding: "12px 20px",
-            borderRadius: "10px",
-            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            fontSize: "13px",
-            fontWeight: 600,
-            animation: "fadeIn 0.2s ease-out",
-          }}
-        >
-          {toast.type === "success" ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
-          <span>{toast.message}</span>
-        </div>
-      )}
     </div>
   );
 }

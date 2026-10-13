@@ -22,10 +22,7 @@ import {
   Server,
   Layers,
   Clock,
-  HardDrive,
-  Search,
-  CheckCircle,
-  AlertCircle
+  HardDrive
 } from "lucide-react";
 import { getAdminStats, getRdpDownloadUrl } from "@/lib/api";
 
@@ -35,13 +32,6 @@ export default function AdminStatsPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [copiedText, setCopiedText] = useState<string | null>(null);
-  const [searchTenant, setSearchTenant] = useState("");
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-
-  const showToast = (message: string, type: "success" | "error" = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
 
   const fetchStats = () => {
     setLoading(true);
@@ -65,7 +55,6 @@ export default function AdminStatsPage() {
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     setCopiedText(label);
-    showToast(`Copied ${label} to clipboard!`, "success");
     setTimeout(() => setCopiedText(null), 2500);
   };
 
@@ -411,7 +400,7 @@ export default function AdminStatsPage() {
 
           {/* Multi-Tenant User Usages Table */}
           <div className="panel-card" style={{ padding: "24px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px", flexWrap: "wrap", gap: "12px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
               <div>
                 <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: "8px" }}>
                   <Users size={18} color="#38bdf8" />
@@ -422,22 +411,9 @@ export default function AdminStatsPage() {
                 </p>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ position: "relative" }}>
-                  <Search size={14} color="#64748b" style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)" }} />
-                  <input
-                    type="text"
-                    placeholder="Search tenant..."
-                    className="form-input"
-                    style={{ paddingLeft: "32px", paddingRight: "10px", paddingTop: "6px", paddingBottom: "6px", fontSize: "12px", width: "180px" }}
-                    value={searchTenant}
-                    onChange={(e) => setSearchTenant(e.target.value)}
-                  />
-                </div>
-                <span style={{ fontSize: "12px", color: "#94a3b8" }}>
-                  Total: <strong style={{ color: "#fff" }}>{usersList.length} Accounts</strong>
-                </span>
-              </div>
+              <span style={{ fontSize: "12px", color: "#94a3b8" }}>
+                Total: <strong>{usersList.length} Accounts</strong>
+              </span>
             </div>
 
             <div style={{ overflowX: "auto" }}>
@@ -455,83 +431,42 @@ export default function AdminStatsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {usersList
-                    .filter((u: any) => {
-                      if (!searchTenant) return true;
-                      const q = searchTenant.toLowerCase();
-                      return (
-                        u.full_name?.toLowerCase().includes(q) ||
-                        u.email?.toLowerCase().includes(q) ||
-                        u.username?.toLowerCase().includes(q)
-                      );
-                    })
-                    .map((u: any) => (
-                      <tr key={u.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                        <td style={{ padding: "14px" }}>
-                          <div style={{ fontWeight: 600, color: "#fff" }}>{u.full_name}</div>
-                          <div style={{ fontSize: "11px", color: "#64748b" }}>{u.email}</div>
-                        </td>
-                        <td style={{ padding: "14px" }}>
-                          <code style={{ color: "#38bdf8", fontSize: "12px", background: "rgba(56,189,248,0.1)", padding: "2px 6px", borderRadius: "4px" }}>
-                            @{u.username}
-                          </code>
-                        </td>
-                        <td style={{ padding: "14px" }}>
-                          <div style={{ color: "#14b8a6", fontWeight: 600 }}>
-                            {formatBytes(u.storage_used_bytes)} ({u.files_count} files)
-                          </div>
-                          <div className="usage-bar-track" style={{ height: "4px", width: "100px", marginTop: "4px" }}>
-                            <div className="usage-bar-fill" style={{ width: `${Math.min(100, Math.round((u.storage_used_bytes / (5 * 1024 ** 3)) * 100))}%`, backgroundColor: "#14b8a6" }} />
-                          </div>
-                        </td>
-                        <td style={{ padding: "14px", color: "#3b82f6", fontWeight: 600 }}>
-                          {u.websites_count} / 3
-                        </td>
-                        <td style={{ padding: "14px", color: "#a855f7", fontWeight: 600 }}>
-                          {u.functions_count} / 5
-                        </td>
-                        <td style={{ padding: "14px", color: "#f97316", fontWeight: 600 }}>
-                          {u.api_routes_count} / 5
-                        </td>
-                        <td style={{ padding: "14px", color: "#ec4899", fontWeight: 600 }}>
-                          {u.invocations_count}
-                        </td>
-                        <td style={{ padding: "14px" }}>
-                          <span className="status-pill status-success">Active</span>
-                        </td>
-                      </tr>
-                    ))}
+                  {usersList.map((u: any) => (
+                    <tr key={u.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                      <td style={{ padding: "14px" }}>
+                        <div style={{ fontWeight: 600, color: "#fff" }}>{u.full_name}</div>
+                        <div style={{ fontSize: "11px", color: "#64748b" }}>{u.email}</div>
+                      </td>
+                      <td style={{ padding: "14px" }}>
+                        <code style={{ color: "#38bdf8", fontSize: "12px", background: "rgba(56,189,248,0.1)", padding: "2px 6px", borderRadius: "4px" }}>
+                          @{u.username}
+                        </code>
+                      </td>
+                      <td style={{ padding: "14px", color: "#14b8a6", fontWeight: 600 }}>
+                        {formatBytes(u.storage_used_bytes)} ({u.files_count} files)
+                      </td>
+                      <td style={{ padding: "14px", color: "#3b82f6", fontWeight: 600 }}>
+                        {u.websites_count} / 3
+                      </td>
+                      <td style={{ padding: "14px", color: "#a855f7", fontWeight: 600 }}>
+                        {u.functions_count} / 5
+                      </td>
+                      <td style={{ padding: "14px", color: "#f97316", fontWeight: 600 }}>
+                        {u.api_routes_count} / 5
+                      </td>
+                      <td style={{ padding: "14px", color: "#ec4899", fontWeight: 600 }}>
+                        {u.invocations_count}
+                      </td>
+                      <td style={{ padding: "14px" }}>
+                        <span className="status-pill status-success">Active</span>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
         </>
-      )}
-
-      {/* Floating Toast Notification */}
-      {toast && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "24px",
-            right: "24px",
-            zIndex: 9999,
-            background: toast.type === "success" ? "rgba(16, 185, 129, 0.95)" : "rgba(239, 68, 68, 0.95)",
-            color: "#fff",
-            padding: "12px 20px",
-            borderRadius: "10px",
-            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            fontSize: "13px",
-            fontWeight: 600,
-            animation: "fadeIn 0.2s ease-out",
-          }}
-        >
-          {toast.type === "success" ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
-          <span>{toast.message}</span>
-        </div>
       )}
     </div>
   );
