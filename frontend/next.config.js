@@ -14,13 +14,13 @@ const nextConfig = {
         source: "/api/:path*",
         destination: process.env.NEXT_PUBLIC_API_URL 
           ? `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`
-          : "http://127.0.0.1:8000/api/:path*",
+          : "http://35.159.95.208/api/:path*",
       },
       {
         source: "/gateway/:path*",
         destination: process.env.NEXT_PUBLIC_API_URL 
           ? `${process.env.NEXT_PUBLIC_API_URL}/gateway/:path*`
-          : "http://127.0.0.1:8000/gateway/:path*",
+          : "http://35.159.95.208/gateway/:path*",
       },
     ];
   },

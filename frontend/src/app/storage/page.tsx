@@ -1022,19 +1022,12 @@ export default function StoragePage() {
             minHeight: "420px",
           }}
         >
-          {/* Subtle Ambient Wave Effect at Bottom (Matching Storage.png) */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "-40px",
-              left: "-30px",
-              right: "-30px",
-              height: "170px",
-              background: "radial-gradient(ellipse at bottom, rgba(56, 189, 248, 0.14) 0%, rgba(168, 85, 247, 0.12) 50%, transparent 80%)",
-              filter: "blur(24px)",
-              pointerEvents: "none",
-            }}
-          />
+          {/* Animated Ambient Bottom Glow */}
+          <div className="animated-bottom-glow-container">
+            <div className="animated-bottom-glow-primary" />
+            <div className="animated-bottom-glow-secondary" />
+            <div className="animated-bottom-glow-line" />
+          </div>
 
           {/* Cloud Upload Icon with Glowing Aura */}
           <div

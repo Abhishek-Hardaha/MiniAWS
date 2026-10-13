@@ -1021,9 +1021,18 @@ export default function WebHostingPage() {
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center",
+              position: "relative",
+              overflow: "hidden",
               boxShadow: "0 8px 30px rgba(0, 0, 0, 0.3)",
             }}
           >
+            {/* Animated Ambient Bottom Glow */}
+            <div className="animated-bottom-glow-container">
+              <div className="animated-bottom-glow-primary" />
+              <div className="animated-bottom-glow-secondary" />
+              <div className="animated-bottom-glow-line" />
+            </div>
+
             {/* Glowing Cloud Upload Icon */}
             <div
               style={{

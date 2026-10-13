@@ -314,18 +314,58 @@ html, body {
   line-height: 1.6;
 }
 
-.hero-bg-art {
+.hero-hyperspeed-art {
   position: absolute;
   right: 0;
   top: 0;
   bottom: 0;
-  width: 60%;
-  background-size: cover;
-  background-position: right center;
-  background-repeat: no-repeat;
-  mask-image: linear-gradient(to right, transparent 0%, black 35%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 35%);
-  pointer-events: none;
+  width: 62%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: auto;
+  cursor: grab;
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.4) 14%, black 38%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.4) 14%, black 38%);
+  z-index: 1;
+}
+
+.hero-hyperspeed-art:active {
+  cursor: grabbing;
+}
+
+.hero-interactive-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  font-size: 12px;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+.hero-hint-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.5;
+  }
 }
 
 /* 5 Quick Service Cards Grid */
@@ -1186,5 +1226,100 @@ table.data-table tr:hover td {
   background-color: rgba(255, 255, 255, 0.06);
   border-color: #38bdf8;
   box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+}
+
+/* ==========================================================================
+   Animated Ambient Bottom Glow for Upload & Feature Cards
+   ========================================================================== */
+.animated-bottom-glow-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+  z-index: 0;
+}
+
+.animated-bottom-glow-primary {
+  position: absolute;
+  bottom: -45px;
+  left: -20%;
+  right: -20%;
+  height: 190px;
+  background: radial-gradient(ellipse at bottom center, rgba(168, 85, 247, 0.45) 0%, rgba(56, 189, 248, 0.3) 40%, rgba(99, 102, 241, 0.15) 60%, transparent 80%);
+  filter: blur(28px);
+  border-radius: 50%;
+  animation: glow-pulse-float 6s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.animated-bottom-glow-secondary {
+  position: absolute;
+  bottom: -60px;
+  left: -10%;
+  right: -10%;
+  height: 150px;
+  background: radial-gradient(ellipse at bottom center, rgba(56, 189, 248, 0.4) 0%, rgba(192, 132, 252, 0.25) 45%, transparent 75%);
+  filter: blur(22px);
+  border-radius: 50%;
+  animation: glow-drift-wave 8s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.animated-bottom-glow-line {
+  position: absolute;
+  bottom: 0;
+  left: 12%;
+  right: 12%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.5) 30%, rgba(168, 85, 247, 0.7) 50%, rgba(56, 189, 248, 0.5) 70%, transparent 100%);
+  filter: blur(1px);
+  opacity: 0.75;
+  animation: glow-line-shimmer 4s ease-in-out infinite alternate;
+}
+
+@keyframes glow-pulse-float {
+  0% {
+    transform: translateY(0) scale(0.95);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(-14px) scale(1.1);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(-6px) scale(1.02);
+    opacity: 0.7;
+  }
+}
+
+@keyframes glow-drift-wave {
+  0% {
+    transform: translateX(-18px) scale(0.98);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateX(18px) scale(1.14);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(-4px) scale(1.02);
+    opacity: 0.65;
+  }
+}
+
+@keyframes glow-line-shimmer {
+  0% {
+    opacity: 0.35;
+    transform: scaleX(0.75);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1.15);
+  }
+  100% {
+    opacity: 0.55;
+    transform: scaleX(0.9);
+  }
 }
 
