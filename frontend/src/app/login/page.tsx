@@ -11,11 +11,8 @@ import {
   EyeOff,
   ArrowRight,
   AlertCircle,
-  ShieldCheck,
   Server,
-  Zap,
   Globe,
-  Terminal,
   Activity,
   Cpu,
   CheckCircle2,
@@ -29,7 +26,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activePersona, setActivePersona] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleLogin = async (e?: React.FormEvent) => {
@@ -47,23 +43,6 @@ export default function LoginPage() {
       setErrorMsg(err.message || "Invalid credentials. Please check your email and password.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleQuickLogin = async (demoEmail: string, personaKey: string) => {
-    setActivePersona(personaKey);
-    setEmail(demoEmail);
-    setPassword("password123");
-    setErrorMsg(null);
-    setLoading(true);
-    try {
-      await loginUser({ email: demoEmail, password: "password123" });
-      router.push("/");
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to log in with persona account.");
-    } finally {
-      setLoading(false);
-      setActivePersona(null);
     }
   };
 
@@ -270,85 +249,8 @@ export default function LoginPage() {
               Sign in to Mini AWS
             </h2>
             <p style={{ color: "#94a3b8", fontSize: "13px", marginTop: "4px" }}>
-              Authenticate with your tenant account or select a quick persona
+              Enter your tenant credentials to access the cloud console
             </p>
-          </div>
-
-          {/* Quick Demo Sign-in Personas */}
-          <div style={{ marginBottom: "22px" }}>
-            <div style={{ fontSize: "11px", color: "#64748b", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", textAlign: "center", marginBottom: "10px" }}>
-              ⚡ 1-Click Fast Persona Sign In
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {/* Admin Persona: Abhishek */}
-              <button
-                type="button"
-                className="auth-quick-persona-btn"
-                onClick={() => handleQuickLogin("abhishek.hardaha.0111@gmail.com", "admin")}
-                disabled={loading}
-                style={{
-                  border: "1px solid rgba(245, 158, 11, 0.3)",
-                  background: activePersona === "admin" ? "rgba(245, 158, 11, 0.15)" : "rgba(245, 158, 11, 0.05)",
-                }}
-              >
-                <div style={{ width: "32px", height: "32px", borderRadius: "10px", background: "rgba(245, 158, 11, 0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <ShieldCheck size={16} color="#f59e0b" />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontWeight: 700, color: "#fff", fontSize: "13px" }}>Abhishek</span>
-                    <span style={{ fontSize: "10px", background: "rgba(245, 158, 11, 0.2)", color: "#fbbf24", padding: "1px 6px", borderRadius: "4px", fontWeight: 700 }}>
-                      ROOT ADMIN
-                    </span>
-                  </div>
-                  <div style={{ fontSize: "11px", color: "#94a3b8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    Full Admin Stats &amp; Protected XRDP GUI
-                  </div>
-                </div>
-              </button>
-
-              {/* Developer Persona: Aarav */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                <button
-                  type="button"
-                  className="auth-quick-persona-btn"
-                  onClick={() => handleQuickLogin("aarav@miniaws.com", "aarav")}
-                  disabled={loading}
-                >
-                  <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "rgba(56, 189, 248, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Zap size={14} color="#38bdf8" />
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, color: "#fff", fontSize: "12px" }}>Aarav Sharma</div>
-                    <div style={{ fontSize: "10px", color: "#64748b" }}>Developer</div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  className="auth-quick-persona-btn"
-                  onClick={() => handleQuickLogin("sarah@miniaws.com", "sarah")}
-                  disabled={loading}
-                >
-                  <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "rgba(168, 85, 247, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Terminal size={14} color="#c084fc" />
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, color: "#fff", fontSize: "12px" }}>Sarah Connor</div>
-                    <div style={{ fontSize: "10px", color: "#64748b" }}>DevOps</div>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "18px 0" }}>
-            <div style={{ flex: 1, height: "1px", background: "rgba(255, 255, 255, 0.08)" }} />
-            <span style={{ fontSize: "11px", color: "#64748b", textTransform: "uppercase", fontWeight: 600 }}>
-              Or sign in with email
-            </span>
-            <div style={{ flex: 1, height: "1px", background: "rgba(255, 255, 255, 0.08)" }} />
           </div>
 
           {/* Error Alert */}
