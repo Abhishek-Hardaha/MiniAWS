@@ -11,7 +11,7 @@ logger = logging.getLogger("MiniAWS-API")
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="Mini AWS Multi-Tier Cloud Platform Backend & API Gateway"
+    description="StackSync Multi-Tier Cloud Platform Backend & API Gateway"
 )
 
 # CORS
@@ -36,7 +36,7 @@ def startup_event():
 def health():
     return {
         "status": "healthy",
-        "service": "MiniAWS Application Tier Backend & Gateway",
+        "service": "StackSync Application Tier Backend & Gateway",
         "version": settings.VERSION,
         "tiers": {
             "tier_1_app": settings.EC2_1_APP_IP,

@@ -63,7 +63,7 @@ export default function SettingsPage() {
 
   const currentUser = user || {
     full_name: "Abhishek Hardaha",
-    email: "abhishek@miniaws.cloud",
+    email: "abhishek@stacksync.cloud",
     username: "abhishek",
     id: "usr_cloud_admin"
   };
@@ -239,7 +239,7 @@ export default function SettingsPage() {
             <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>API Access Token (JWT)</h3>
           </div>
           <p style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.5", marginBottom: "16px" }}>
-            Use this bearer token to authenticate programmatic REST API calls to the MiniAWS gateway from external scripts or CLI.
+            Use this bearer token to authenticate programmatic REST API calls to the StackSync gateway from external scripts or CLI.
           </p>
 
           <div

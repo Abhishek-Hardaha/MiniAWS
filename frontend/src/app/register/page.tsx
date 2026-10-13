@@ -241,7 +241,7 @@ export default function RegisterPage() {
               Create Cloud Account
             </h2>
             <p style={{ color: "#94a3b8", fontSize: "13px", marginTop: "4px" }}>
-              Provision your isolated developer workspace on Mini AWS
+              Provision your isolated developer workspace on StackSync
             </p>
           </div>
 

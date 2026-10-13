@@ -75,7 +75,7 @@ export default function LoginPage() {
             }}
           >
             <Sparkles size={14} className="spin-slow" />
-            <span>MiniAWS Multi-Cloud Fabric • eu-central-1</span>
+            <span>StackSync Multi-Cloud Fabric • eu-central-1</span>
           </div>
 
           <h1
@@ -247,7 +247,7 @@ export default function LoginPage() {
               <Cloud size={30} color="#38bdf8" />
             </div>
             <h2 style={{ fontSize: "24px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
-              Sign in to Mini AWS
+              Sign in to StackSync
             </h2>
             <p style={{ color: "#94a3b8", fontSize: "13px", marginTop: "4px" }}>
               Enter your tenant credentials to access the cloud console
@@ -348,7 +348,7 @@ export default function LoginPage() {
 
           {/* Register Link */}
           <div style={{ marginTop: "22px", textAlign: "center", fontSize: "13px", color: "#94a3b8" }}>
-            Don't have a MiniAWS tenant account?{" "}
+            Don't have a StackSync tenant account?{" "}
             <Link href="/register" style={{ color: "#38bdf8", fontWeight: 700, textDecoration: "none" }}>
               Create an account →
             </Link>

@@ -1,6 +1,6 @@
-# Mini AWS Cloud Platform
+# StackSync Cloud Platform
 
-A demonstration of a **Multi-Tier Cloud Platform Architecture** deployed across **exactly 3 AWS EC2 instances**. MiniAWS provides a sleek, modern cyber-themed web console where users can access and manage their own cloud resources with strict per-user quotas.
+A demonstration of a **Multi-Tier Cloud Platform Architecture** deployed across **exactly 3 AWS EC2 instances**. StackSync provides a sleek, modern cyber-themed web console where users can access and manage their own cloud resources with strict per-user quotas.
 
 ---
 

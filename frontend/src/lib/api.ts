@@ -1,4 +1,4 @@
-// API Client for MiniAWS Console
+// API Client for StackSync Console
 
 const API_BASE = typeof window !== "undefined" 
   ? (process.env.NEXT_PUBLIC_API_URL || "")

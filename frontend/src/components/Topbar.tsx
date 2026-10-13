@@ -53,7 +53,7 @@ export default function Topbar() {
           className="search-input"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              alert(`Searching Mini AWS resources for: "${(e.target as HTMLInputElement).value}"`);
+              alert(`Searching StackSync resources for: "${(e.target as HTMLInputElement).value}"`);
             }
           }}
         />

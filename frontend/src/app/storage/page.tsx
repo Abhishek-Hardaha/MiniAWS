@@ -352,7 +352,7 @@ export default function StoragePage() {
         >
           <img
             src="/storage-3d-folders.png"
-            alt="MiniAWS Storage"
+            alt="StackSync Storage"
             style={{
               height: "115px",
               objectFit: "contain",

@@ -83,7 +83,7 @@ export default function HelpPage() {
               <span>Multi-Tier 3× EC2 Architecture Overview</span>
             </h2>
             <p style={{ color: "#94a3b8", fontSize: "14px", lineHeight: "1.6", marginBottom: "20px" }}>
-              MiniAWS is engineered on a distributed 3-tier enterprise cloud topology deployed across AWS EC2 instances in the <code>eu-central-1</code> (Frankfurt) region:
+              StackSync is engineered on a distributed 3-tier enterprise cloud topology deployed across AWS EC2 instances in the <code>eu-central-1</code> (Frankfurt) region:
             </p>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
@@ -160,7 +160,7 @@ export default function HelpPage() {
               <span>Connecting via Windows Remote Desktop (XRDP GUI)</span>
             </h2>
             <p style={{ color: "#94a3b8", fontSize: "14px", lineHeight: "1.6", marginBottom: "20px" }}>
-              Every EC2 instance in MiniAWS has been provisioned with the ultra-responsive, lightweight <strong>XFCE 4.18 Desktop Environment</strong> and configured with <strong>XRDP</strong> listening on port <code>3389</code>.
+              Every EC2 instance in StackSync has been provisioned with the ultra-responsive, lightweight <strong>XFCE 4.18 Desktop Environment</strong> and configured with <strong>XRDP</strong> listening on port <code>3389</code>.
             </p>
 
             {/* Credentials Banner */}

@@ -74,7 +74,7 @@ def get_current_user(
     # 3. Reject unauthenticated requests
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Authentication required. Please sign in to access Mini AWS.",
+        detail="Authentication required. Please sign in to access StackSync.",
         headers={"WWW-Authenticate": "Bearer"},
     )
 

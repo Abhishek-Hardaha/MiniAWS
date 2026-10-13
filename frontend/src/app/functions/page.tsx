@@ -35,7 +35,7 @@ const TEMPLATES: Record<string, string> = {
     total = sum(data)
     average = total / len(data) if data else 0
     
-    print(f"MiniAWS Runner: Processing batch of {len(data)} items")
+    print(f"StackSync Runner: Processing batch of {len(data)} items")
     print(f"Calculated Total: {total}, Average: {average:.2f}")
     
     return {
@@ -76,7 +76,7 @@ const TEMPLATES: Record<string, string> = {
     print(f"Incoming {http_method} request for user: {name}")
     
     return {
-        "message": f"Hello, {name}! Welcome to Mini AWS Serverless.",
+        "message": f"Hello, {name}! Welcome to StackSync Serverless.",
         "method": http_method,
         "received_params": params
     }`,

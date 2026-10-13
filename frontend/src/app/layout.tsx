@@ -2,8 +2,8 @@ import "@/styles/globals.css";
 import AppShell from "@/components/AppShell";
 
 export const metadata = {
-  title: "Mini AWS Cloud Platform",
-  description: "Lightweight Multi-Tier Cloud Console on AWS EC2",
+  title: "StackSync Cloud Platform",
+  description: "StackSync Multi-Tier Cloud Console on AWS EC2",
 };
 
 export default function RootLayout({

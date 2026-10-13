@@ -37,7 +37,7 @@ const DEFAULT_SAMPLE_HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Welcome to Mini AWS Hosted Site</title>
+  <title>Welcome to StackSync Hosted Site</title>
   <style>
     body {
       background: #090e1a;
@@ -76,7 +76,7 @@ const DEFAULT_SAMPLE_HTML = `<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <div class="badge">🚀 Hosted on Mini AWS Data Tier</div>
+  <div class="badge">🚀 Hosted on StackSync Data Tier</div>
   <h1>Hello from Cloud Static Hosting!</h1>
   <p>This static website is served directly from Nginx running on EC2 Instance 2 (Data Tier) with instant deployment.</p>
 </body>
@@ -385,7 +385,7 @@ export default function WebHostingPage() {
         >
           <img
             src="/web-hosting-3d-graphic.png"
-            alt="MiniAWS Web Hosting"
+            alt="StackSync Web Hosting"
             style={{
               height: "115px",
               objectFit: "contain",
@@ -635,7 +635,7 @@ export default function WebHostingPage() {
                 websites.map((site) => {
                   const isMenuOpen = actionMenuOpenId === site.id;
                   const isCopied = copiedId === site.id;
-                  const siteUrl = site.domain_url || site.site_url || `https://${site.subdomain}.miniaws.cloud`;
+                  const siteUrl = site.domain_url || site.site_url || `https://${site.subdomain}.stacksync.cloud`;
 
                   return (
                     <div

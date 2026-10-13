@@ -11,7 +11,7 @@ $EC2_3_IP = "3.71.47.123"
 $KEY_PATH = ".\Inst1.pem"
 
 Write-Host "=======================================================" -ForegroundColor Cyan
-Write-Host "   Mini AWS Cloud Platform - Multi-Tier Deployment    " -ForegroundColor Cyan
+Write-Host "   StackSync Cloud Platform - Multi-Tier Deployment    " -ForegroundColor Cyan
 Write-Host "=======================================================" -ForegroundColor Cyan
 
 # Check key
