@@ -36,26 +36,39 @@ export const setStoredUser = (user: any | null) => {
       if (user.id) localStorage.setItem("miniaws_user_id", user.id);
     } else {
       localStorage.removeItem("miniaws_user");
+      localStorage.removeItem("miniaws_user_id");
     }
   }
 };
 
-export const getStoredUserId = (): string => {
-  if (typeof window === "undefined") return "usr_aarav_sharma";
-  return localStorage.getItem("miniaws_user_id") || "usr_aarav_sharma";
+export const getStoredUserId = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("miniaws_user_id");
 };
 
-export const setStoredUserId = (userId: string) => {
+export const setStoredUserId = (userId: string | null) => {
   if (typeof window !== "undefined") {
-    localStorage.setItem("miniaws_user_id", userId);
+    if (userId) {
+      localStorage.setItem("miniaws_user_id", userId);
+    } else {
+      localStorage.removeItem("miniaws_user_id");
+    }
   }
+};
+
+export const isAuthenticated = (): boolean => {
+  if (typeof window === "undefined") return false;
+  return Boolean(localStorage.getItem("miniaws_token") || localStorage.getItem("miniaws_user_id"));
 };
 
 const getHeaders = (extraHeaders: Record<string, string> = {}) => {
   const headers: Record<string, string> = {
-    "X-User-Id": getStoredUserId(),
     ...extraHeaders,
   };
+  const userId = getStoredUserId();
+  if (userId) {
+    headers["X-User-Id"] = userId;
+  }
   const token = getStoredToken();
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
@@ -236,7 +249,11 @@ export const getCurrentUser = () => fetchApi<any>("/api/auth/me");
 export const logoutUser = () => {
   setStoredToken(null);
   setStoredUser(null);
+  setStoredUserId(null);
   if (typeof window !== "undefined") {
+    localStorage.removeItem("miniaws_token");
+    localStorage.removeItem("miniaws_user");
+    localStorage.removeItem("miniaws_user_id");
     window.location.href = "/login";
   }
 };

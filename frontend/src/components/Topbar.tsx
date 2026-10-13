@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, Bell, ChevronDown, Check, UserPlus, LogOut, ShieldAlert } from "lucide-react";
-import { getStoredUserId, setStoredUserId, listUsers, logoutUser } from "@/lib/api";
+import { getStoredUserId, setStoredUserId, getStoredUser, setStoredUser, listUsers, logoutUser } from "@/lib/api";
 
 export default function Topbar() {
   const [currentUser, setCurrentUser] = useState<{ id: string; full_name: string; email: string }>({
@@ -11,33 +11,32 @@ export default function Topbar() {
     full_name: "Aarav Sharma",
     email: "aarav@miniaws.com",
   });
-  const [usersList, setUsersList] = useState<any[]>([
-    { id: "usr_aarav_sharma", full_name: "Aarav Sharma", email: "aarav@miniaws.com" },
-    { id: "usr_sarah_connor", full_name: "Sarah Connor", email: "sarah@miniaws.com" },
-  ]);
+  const [usersList, setUsersList] = useState<any[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
 
   useEffect(() => {
+    const stored = getStoredUser();
+    if (stored) {
+      setCurrentUser(stored);
+    }
     const activeId = getStoredUserId();
-    // Try to load users from backend
     listUsers()
       .then((users) => {
         if (users && users.length > 0) {
           setUsersList(users);
-          const active = users.find((u) => u.id === activeId) || users[0];
-          setCurrentUser(active);
+          if (!stored && activeId) {
+            const active = users.find((u) => u.id === activeId);
+            if (active) setCurrentUser(active);
+          }
         }
       })
-      .catch(() => {
-        // Fallback local list
-        const active = usersList.find((u) => u.id === activeId) || usersList[0];
-        setCurrentUser(active);
-      });
+      .catch(() => {});
   }, []);
 
   const handleSwitchUser = (user: any) => {
     setStoredUserId(user.id);
+    setStoredUser(user);
     setCurrentUser(user);
     setDropdownOpen(false);
     window.location.reload();
@@ -139,10 +138,10 @@ export default function Topbar() {
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
             <div className="avatar-circle">
-              {currentUser.full_name.charAt(0)}
+              {(currentUser?.full_name || "Cloud User").charAt(0)}
             </div>
             <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>
-              {currentUser.full_name}
+              {currentUser?.full_name || "Cloud User"}
             </span>
             <ChevronDown size={14} color="#94a3b8" />
           </div>
