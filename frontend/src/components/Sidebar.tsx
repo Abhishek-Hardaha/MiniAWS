@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home,
+  Server,
   Database,
   Globe,
   Code2,
@@ -17,6 +18,7 @@ import {
 
 const NAV_ITEMS = [
   { name: "Home", href: "/", icon: Home },
+  { name: "EC2 Instances", href: "/instances", icon: Server },
   { name: "Storage", href: "/storage", icon: Database },
   { name: "Web Hosting", href: "/web-hosting", icon: Globe },
   { name: "Serverless Functions", href: "/functions", icon: Code2 },
@@ -63,17 +65,13 @@ export default function Sidebar() {
           <Settings size={18} strokeWidth={1.8} />
           <span>Settings</span>
         </Link>
-        <a
-          href="#help"
-          onClick={(e) => {
-            e.preventDefault();
-            alert("Mini AWS Cloud Platform Architecture:\n\n• EC2 Instance 1 (35.159.95.208) - App Tier (Next.js & FastAPI Gateway)\n• EC2 Instance 2 (3.127.237.130) - Data Tier (PostgreSQL, Storage, Web Hosting)\n• EC2 Instance 3 (3.71.47.123) - Execution Tier (Python Runner & Monitoring)");
-          }}
-          className="nav-item"
+        <Link
+          href="/help"
+          className={`nav-item ${pathname === "/help" ? "active" : ""}`}
         >
           <HelpCircle size={18} strokeWidth={1.8} />
           <span>Help</span>
-        </a>
+        </Link>
       </div>
     </aside>
   );

@@ -13,48 +13,73 @@ import {
   UserCheck,
   Check,
   Zap,
-  Info
+  Info,
+  Copy,
+  Lock,
+  Monitor
 } from "lucide-react";
-import { getDashboardSummary } from "@/lib/api";
+import { getDashboardSummary, getStoredUser, getStoredToken } from "@/lib/api";
 
 export default function SettingsPage() {
   const [data, setData] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [copiedToken, setCopiedToken] = useState(false);
 
   useEffect(() => {
+    const storedUser = getStoredUser();
+    if (storedUser) setUser(storedUser);
+    const storedTok = getStoredToken();
+    if (storedTok) setToken(storedTok);
+
     getDashboardSummary()
-      .then((res) => setData(res))
-      .catch((err) => console.error(err));
+      .then((res) => {
+        setData(res);
+        if (res?.user) setUser(res.user);
+      })
+      .catch((err) => console.error("Error loading dashboard summary:", err));
   }, []);
 
   const quotas = data?.quotas || {
-    storage_used_bytes: 671088640,
+    storage_used_bytes: 0,
     storage_max_bytes: 5368709120,
-    storage_percent: 12,
-    websites_used: 1,
+    storage_percent: 0,
+    websites_used: 0,
     websites_max: 3,
-    websites_percent: 33,
-    functions_used: 2,
+    websites_percent: 0,
+    functions_used: 0,
     functions_max: 5,
-    functions_percent: 40,
-    api_routes_used: 1,
+    functions_percent: 0,
+    api_routes_used: 0,
     api_routes_max: 5,
-    api_routes_percent: 20,
-    api_requests_today: 128,
+    api_routes_percent: 0,
+    api_requests_today: 0,
     api_requests_max: 500,
-    api_requests_percent: 26,
-    invocations_month: 45,
+    api_requests_percent: 0,
+    invocations_month: 0,
     invocations_max: 2000,
-    invocations_percent: 2.25,
+    invocations_percent: 0,
   };
 
-  const user = data?.user || {
-    full_name: "Aarav Sharma",
-    email: "aarav@miniaws.com",
+  const currentUser = user || {
+    full_name: "Abhishek Hardaha",
+    email: "abhishek@miniaws.cloud",
+    username: "abhishek",
+    id: "usr_cloud_admin"
   };
 
   const formatBytes = (bytes: number) => {
+    if (!bytes || bytes === 0) return "0 MB";
     if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
-    return `${(bytes / 1024 ** 2).toFixed(0)} MB`;
+    return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  };
+
+  const handleCopyToken = () => {
+    if (token) {
+      navigator.clipboard.writeText(token);
+      setCopiedToken(true);
+      setTimeout(() => setCopiedToken(false), 2500);
+    }
   };
 
   return (
@@ -66,7 +91,7 @@ export default function SettingsPage() {
           Settings &amp; Quota Governance
         </h1>
         <p style={{ color: "#94a3b8", fontSize: "14px", marginTop: "4px" }}>
-          Monitor your assigned multi-tenant resource quotas and manage account credentials.
+          Manage your cloud identity credentials, API tokens, and inspect strict multi-tenant quotas.
         </p>
       </div>
 
@@ -83,14 +108,17 @@ export default function SettingsPage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
-          <div className="avatar-circle" style={{ width: "54px", height: "54px", fontSize: "22px" }}>
-            {user.full_name.charAt(0)}
+          <div className="avatar-circle" style={{ width: "54px", height: "54px", fontSize: "22px", background: "linear-gradient(135deg, #2563eb, #1d4ed8)" }}>
+            {(currentUser.full_name || "A").charAt(0).toUpperCase()}
           </div>
           <div>
             <div style={{ fontSize: "18px", fontWeight: 700, color: "#fff" }}>
-              {user.full_name}
+              {currentUser.full_name}
             </div>
-            <div style={{ fontSize: "13px", color: "#94a3b8" }}>{user.email}</div>
+            <div style={{ fontSize: "13px", color: "#94a3b8" }}>{currentUser.email}</div>
+            <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
+              User ID: <code>{currentUser.id}</code>
+            </div>
           </div>
         </div>
 
@@ -106,19 +134,22 @@ export default function SettingsPage() {
               borderRadius: "9999px",
             }}
           >
-            Standard Cloud Quota
+            Universal Cloud Quota
           </span>
-          <div style={{ fontSize: "11px", color: "#64748b", marginTop: "6px" }}>
-            Status: Active &amp; Verified
+          <div style={{ fontSize: "11px", color: "#34d399", marginTop: "6px", display: "flex", alignItems: "center", gap: "4px", justifyContent: "flex-end" }}>
+            <span className="pulse-live-dot" /> Authenticated &amp; Verified
           </div>
         </div>
       </div>
 
       {/* Quota Governance Grid */}
       <div className="panel-card" style={{ marginBottom: "24px" }}>
-        <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#fff", marginBottom: "20px" }}>
-          Resource Quota Limits &amp; Enforcement
+        <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>
+          Multi-Tenant Quota Limits &amp; Enforcement
         </h2>
+        <p style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "20px" }}>
+          Equal and fair resource allocation applied across all cloud tenants. No tiered restrictions.
+        </p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
           {/* Storage Quota */}
@@ -193,8 +224,64 @@ export default function SettingsPage() {
               <div className="usage-bar-fill" style={{ width: `${quotas.api_requests_percent}%`, backgroundColor: "#3b82f6" }} />
             </div>
             <div style={{ fontSize: "12px", color: "#94a3b8" }}>
-              {quotas.api_requests_today} requests today of {quotas.api_requests_max} limit
+              {quotas.api_requests_today} requests today of {quotas.api_requests_max} daily limit
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* API Authentication & Remote Access */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+        {/* API Bearer Token */}
+        <div className="panel-card">
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+            <Key size={18} color="#f59e0b" />
+            <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>API Access Token (JWT)</h3>
+          </div>
+          <p style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.5", marginBottom: "16px" }}>
+            Use this bearer token to authenticate programmatic REST API calls to the MiniAWS gateway from external scripts or CLI.
+          </p>
+
+          <div
+            style={{
+              background: "rgba(0,0,0,0.3)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "8px",
+              padding: "10px 14px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "12px"
+            }}
+          >
+            <span style={{ fontSize: "11px", color: "#60a5fa", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "340px" }}>
+              {token ? `Bearer ${token}` : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.active_cloud_token..."}
+            </span>
+            <button
+              onClick={handleCopyToken}
+              className="secondary-btn"
+              style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", padding: "6px 12px" }}
+            >
+              {copiedToken ? <Check size={13} color="#34d399" /> : <Copy size={13} />}
+              <span>{copiedToken ? "Copied" : "Copy"}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Remote Desktop Credentials */}
+        <div className="panel-card">
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+            <Monitor size={18} color="#34d399" />
+            <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>Remote Desktop (XRDP GUI)</h3>
+          </div>
+          <p style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.5", marginBottom: "14px" }}>
+            Connect to any of the 3 EC2 instances via Windows Remote Desktop (<code>mstsc.exe</code>) on port 3389 with XFCE GUI.
+          </p>
+
+          <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "10px 14px", border: "1px solid rgba(255,255,255,0.08)", fontSize: "12px", lineHeight: "1.8" }}>
+            <div>Username: <strong style={{ color: "#fff" }}>ec2-user</strong></div>
+            <div>Password: <strong style={{ color: "#38bdf8" }}>MiniAWS@2026!</strong></div>
+            <div style={{ color: "#64748b", fontSize: "11px" }}>Available on: 35.159.95.208, 3.127.237.130, 3.71.47.123</div>
           </div>
         </div>
       </div>

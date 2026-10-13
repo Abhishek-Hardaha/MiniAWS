@@ -234,3 +234,7 @@ export const logoutUser = () => {
     window.location.href = "/login";
   }
 };
+
+// 7. EC2 Cloud Instances & RDP
+export const getEC2Instances = () => fetchApi<any>("/api/instances");
+export const getRdpDownloadUrl = (instanceId: string) => `${API_BASE}/api/instances/${instanceId}/rdp`;

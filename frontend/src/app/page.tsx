@@ -206,15 +206,32 @@ export default function HomePage() {
               Multi-Tier 3× EC2 Architecture Live Telemetry
             </h2>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#34d399", fontWeight: 600 }}>
-            <span className="pulse-live-dot" />
-            <span>All 3 Tiers Operational</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#34d399", fontWeight: 600 }}>
+              <span className="pulse-live-dot" />
+              <span>All 3 Tiers Operational</span>
+            </div>
+            <Link
+              href="/instances"
+              style={{
+                fontSize: "12px",
+                color: "#38bdf8",
+                fontWeight: 600,
+                textDecoration: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px"
+              }}
+            >
+              <span>Manage Fleet &amp; RDP</span>
+              <ArrowRight size={13} />
+            </Link>
           </div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
           {/* Tier 1: App */}
-          <div className="tier-health-card">
+          <Link href="/instances" style={{ textDecoration: "none" }} className="tier-health-card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
               <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff" }}>Tier 1: Application</span>
               <span className="status-pill status-success">Online</span>
@@ -225,10 +242,10 @@ export default function HomePage() {
             <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
               Next.js Console :3000 • FastAPI Gateway :8000 • Nginx Reverse Proxy
             </div>
-          </div>
+          </Link>
 
           {/* Tier 2: Data */}
-          <div className="tier-health-card">
+          <Link href="/instances" style={{ textDecoration: "none" }} className="tier-health-card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
               <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff" }}>Tier 2: Data &amp; Storage</span>
               <span className="status-pill status-success">Online</span>
@@ -239,10 +256,10 @@ export default function HomePage() {
             <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
               PostgreSQL :5432 • S3 Storage :9000 • Static Sites Nginx :8080
             </div>
-          </div>
+          </Link>
 
           {/* Tier 3: Execution */}
-          <div className="tier-health-card">
+          <Link href="/instances" style={{ textDecoration: "none" }} className="tier-health-card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
               <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff" }}>Tier 3: Execution Tier</span>
               <span className="status-pill status-success">Online</span>
@@ -253,7 +270,7 @@ export default function HomePage() {
             <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
               Python Runner :5001 • Cron Scheduler :5002 • CloudWatch Telemetry
             </div>
-          </div>
+          </Link>
         </div>
       </div>
 

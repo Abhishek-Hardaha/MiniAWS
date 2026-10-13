@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import engine, Base
-from app.routers import auth, storage, websites, functions, gateway, monitoring, dashboard
+from app.routers import auth, storage, websites, functions, gateway, monitoring, dashboard, instances
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("MiniAWS-API")
@@ -52,6 +52,7 @@ app.include_router(websites.router, prefix=settings.API_PREFIX)
 app.include_router(functions.router, prefix=settings.API_PREFIX)
 app.include_router(monitoring.router, prefix=settings.API_PREFIX)
 app.include_router(dashboard.router, prefix=settings.API_PREFIX)
+app.include_router(instances.router, prefix=settings.API_PREFIX)
 
 # Include API Gateway router (both /api/gateway and /gateway)
 app.include_router(gateway.router)
