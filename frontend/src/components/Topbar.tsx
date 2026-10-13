@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, Bell, ChevronDown, Check, UserPlus, LogOut } from "lucide-react";
+import Link from "next/link";
+import { Search, Bell, ChevronDown, Check, UserPlus, LogOut, ShieldAlert } from "lucide-react";
 import { getStoredUserId, setStoredUserId, listUsers, logoutUser } from "@/lib/api";
 
 export default function Topbar() {
@@ -62,6 +63,30 @@ export default function Topbar() {
 
       {/* Right Actions */}
       <div className="topbar-actions">
+        {/* Admin Stats Button */}
+        <Link
+          href="/admin-stats"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "7px",
+            padding: "6px 14px",
+            background: "linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(37, 99, 235, 0.18) 100%)",
+            border: "1px solid rgba(56, 189, 248, 0.35)",
+            borderRadius: "8px",
+            color: "#38bdf8",
+            fontSize: "12px",
+            fontWeight: 700,
+            textDecoration: "none",
+            cursor: "pointer",
+            marginRight: "6px",
+          }}
+          title="Open Cloud Admin Stats & Platform Overview"
+        >
+          <ShieldAlert size={14} color="#38bdf8" />
+          <span>Admin Stats</span>
+        </Link>
+
         {/* Notification Bell */}
         <div style={{ position: "relative" }}>
           <button

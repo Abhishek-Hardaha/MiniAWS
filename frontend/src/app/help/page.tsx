@@ -184,15 +184,9 @@ export default function HelpPage() {
               </div>
 
               <div>
-                <div style={{ fontSize: "12px", color: "#6ee7b7", fontWeight: 600 }}>DEFAULT PASSWORD</div>
+                <div style={{ fontSize: "12px", color: "#6ee7b7", fontWeight: 600 }}>RDP PASSWORD</div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
-                  <code style={{ fontSize: "18px", fontWeight: 800, color: "#38bdf8" }}>MiniAWS@2026!</code>
-                  <button
-                    onClick={() => copyToClipboard("MiniAWS@2026!", "rdp-pwd")}
-                    style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8" }}
-                  >
-                    {copiedText === "rdp-pwd" ? <Check size={14} color="#34d399" /> : <Copy size={14} />}
-                  </button>
+                  <code style={{ fontSize: "14px", fontWeight: 700, color: "#38bdf8" }}>🔒 Admin-Only (See Admin Stats)</code>
                 </div>
               </div>
 
@@ -211,7 +205,7 @@ export default function HelpPage() {
                   Method 1: One-Click Connection with .RDP File
                 </h3>
                 <p style={{ fontSize: "13px", color: "#94a3b8", lineHeight: "1.6" }}>
-                  Navigate to the <strong>EC2 Instances</strong> page in the sidebar. Next to any of the 3 instances, click the blue <strong>"Connect RDP"</strong> button. Double-click the downloaded <code>.rdp</code> file, click "Connect", enter password <code>MiniAWS@2026!</code>, and your XFCE Linux desktop will immediately open in full screen.
+                  Navigate to the <a href="/admin-stats" style={{ color: "#38bdf8", textDecoration: "underline" }}><strong>Admin Stats</strong></a> console. Under the EC2 Remote Desktop GUI section, authenticated root administrators can reveal session credentials and download preconfigured <code>.rdp</code> profile files with one click.
                 </p>
               </div>
 

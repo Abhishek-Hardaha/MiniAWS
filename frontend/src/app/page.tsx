@@ -75,15 +75,17 @@ export default function HomePage() {
   };
 
   // Generate real telemetry timeline data from actual invocations & activities
-  const timelineData: ChartDataPoint[] = [
-    { label: "00:00", value: Math.max(2, Math.floor(quotas.invocations_month * 0.08)), secondaryLabel: "Nightly idle" },
-    { label: "04:00", value: Math.max(3, Math.floor(quotas.invocations_month * 0.12)), secondaryLabel: "Automated cron" },
-    { label: "08:00", value: Math.max(8, Math.floor(quotas.invocations_month * 0.28)), secondaryLabel: "Morning traffic" },
-    { label: "12:00", value: Math.max(14, Math.floor(quotas.invocations_month * 0.45)), secondaryLabel: "Peak operations" },
-    { label: "16:00", value: Math.max(11, Math.floor(quotas.invocations_month * 0.35)), secondaryLabel: "Standard runs" },
-    { label: "20:00", value: Math.max(9, Math.floor(quotas.invocations_month * 0.30)), secondaryLabel: "Evening traffic" },
-    { label: "Live", value: quotas.api_requests_today || 12, secondaryLabel: "Current telemetry" },
-  ];
+  const timelineData: ChartDataPoint[] = quotas.invocations_month > 0 || quotas.api_requests_today > 0
+    ? [
+        { label: "00:00", value: Math.floor(quotas.invocations_month * 0.08), secondaryLabel: "Nightly idle" },
+        { label: "04:00", value: Math.floor(quotas.invocations_month * 0.12), secondaryLabel: "Automated cron" },
+        { label: "08:00", value: Math.floor(quotas.invocations_month * 0.28), secondaryLabel: "Morning traffic" },
+        { label: "12:00", value: Math.floor(quotas.invocations_month * 0.45), secondaryLabel: "Peak operations" },
+        { label: "16:00", value: Math.floor(quotas.invocations_month * 0.35), secondaryLabel: "Standard runs" },
+        { label: "20:00", value: Math.floor(quotas.invocations_month * 0.30), secondaryLabel: "Evening traffic" },
+        { label: "Live", value: quotas.api_requests_today || 0, secondaryLabel: "Current telemetry" },
+      ]
+    : [];
 
   return (
     <div className="content-wrapper">

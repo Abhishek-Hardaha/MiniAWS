@@ -17,7 +17,8 @@ import {
   Clock,
   Layers,
   ChevronRight,
-  Info
+  Info,
+  ShieldAlert
 } from "lucide-react";
 import { getEC2Instances, getRdpDownloadUrl } from "@/lib/api";
 import RadialProgressGauge from "@/components/charts/RadialProgressGauge";
@@ -160,7 +161,15 @@ export default function InstancesPage() {
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <a
+            href="/admin-stats"
+            className="primary-btn"
+            style={{ display: "flex", alignItems: "center", gap: "8px", background: "linear-gradient(135deg, #3b82f6, #8b5cf6)", color: "#fff", textDecoration: "none" }}
+          >
+            <ShieldAlert size={16} />
+            <span>Open Admin Stats</span>
+          </a>
           <button
             onClick={() => setActiveTab(activeTab === "fleet" ? "rdp-guide" : "fleet")}
             className="secondary-btn"
@@ -272,7 +281,7 @@ export default function InstancesPage() {
               </div>
               <div style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.5" }}>
                 Username: <code style={{ color: "#fff", fontWeight: 700 }}>ec2-user</code><br />
-                Password: <code style={{ color: "#38bdf8", fontWeight: 700 }}>MiniAWS@2026!</code><br />
+                Password: <a href="/admin-stats" style={{ color: "#38bdf8", fontWeight: 700, textDecoration: "underline" }}>🔒 Protected (View in Admin Stats)</a><br />
                 Session: <code>Xorg / XFCE</code>
               </div>
             </div>

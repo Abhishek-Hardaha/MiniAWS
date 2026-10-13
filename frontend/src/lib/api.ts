@@ -141,6 +141,12 @@ export const updateWebsite = (siteId: string, data: any) =>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
+export const updateWebsiteDomain = (siteId: string, data: { subdomain: string; custom_domain?: string; site_name?: string; description?: string }) =>
+  fetchApi<any>(`/api/websites/${siteId}/domain`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
 export const deleteWebsite = (siteId: string) => 
   fetchApi<any>(`/api/websites/${siteId}`, { method: "DELETE" });
 
@@ -238,3 +244,4 @@ export const logoutUser = () => {
 // 7. EC2 Cloud Instances & RDP
 export const getEC2Instances = () => fetchApi<any>("/api/instances");
 export const getRdpDownloadUrl = (instanceId: string) => `${API_BASE}/api/instances/${instanceId}/rdp`;
+export const getAdminStats = () => fetchApi<any>("/api/admin/stats");

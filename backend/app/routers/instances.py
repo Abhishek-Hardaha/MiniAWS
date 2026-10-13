@@ -156,12 +156,26 @@ def list_ec2_instances(current_user: User = Depends(get_current_user)):
         "instances": instances
     }
 
+ADMIN_EMAILS = ["abhishek.hardaha.0111@gmail.com", "abhishek@miniaws.cloud", "admin@miniaws.com"]
+ADMIN_USERNAMES = ["abhishek", "admin"]
+
+def is_admin_user(user: User) -> bool:
+    if user.email.lower() in ADMIN_EMAILS:
+        return True
+    if user.user_name.lower() in ADMIN_USERNAMES:
+        return True
+    if getattr(user, "id", "") == "usr_3cc1265ef43f":
+        return True
+    return False
+
 @router.get("/{instance_id}/rdp")
 def download_rdp_file(instance_id: str, current_user: User = Depends(get_current_user)):
     """
-    Dynamically generates a ready-to-run Windows .rdp file configured with the target EC2's
-    public IP, XRDP port 3389, username ec2-user, and desktop display preferences.
+    Dynamically generates a ready-to-run Windows .rdp file.
+    Protected: Restricted strictly to the platform administrator.
     """
+    if not is_admin_user(current_user):
+        raise HTTPException(status_code=403, detail="Remote Desktop access is restricted to the platform administrator.")
     ip_map = {
         "i-miniaws-ec2-1-app": settings.EC2_1_PUBLIC_IP,
         "i-miniaws-ec2-2-data": settings.EC2_2_PUBLIC_IP,

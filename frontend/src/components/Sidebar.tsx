@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home,
-  Server,
   Database,
   Globe,
   Code2,
@@ -13,12 +12,12 @@ import {
   BarChart3,
   Settings,
   HelpCircle,
-  Cloud
+  Cloud,
+  ShieldAlert
 } from "lucide-react";
 
 const NAV_ITEMS = [
   { name: "Home", href: "/", icon: Home },
-  { name: "EC2 Instances", href: "/instances", icon: Server },
   { name: "Storage", href: "/storage", icon: Database },
   { name: "Web Hosting", href: "/web-hosting", icon: Globe },
   { name: "Serverless Functions", href: "/functions", icon: Code2 },
@@ -58,6 +57,14 @@ export default function Sidebar() {
 
       {/* Bottom Nav Items */}
       <div className="sidebar-bottom">
+        <Link
+          href="/admin-stats"
+          className={`nav-item ${pathname === "/admin-stats" ? "active" : ""}`}
+          style={{ color: "#38bdf8" }}
+        >
+          <ShieldAlert size={18} strokeWidth={2} color="#38bdf8" />
+          <span style={{ fontWeight: 600 }}>Admin Stats</span>
+        </Link>
         <Link
           href="/settings"
           className={`nav-item ${pathname === "/settings" ? "active" : ""}`}

@@ -16,6 +16,7 @@ class UserLogin(BaseModel):
 
 class UserResponse(UserBase):
     id: str
+    username: Optional[str] = None
     avatar_url: Optional[str] = None
     is_active: bool
     created_at: datetime
@@ -63,6 +64,7 @@ class StorageFileResponse(BaseModel):
 # Websites
 class WebsiteCreate(BaseModel):
     subdomain: str
+    custom_domain: Optional[str] = None
     site_name: str
     description: Optional[str] = None
     html_content: str
@@ -71,17 +73,27 @@ class WebsiteCreate(BaseModel):
 
 class WebsiteUpdate(BaseModel):
     site_name: Optional[str] = None
+    subdomain: Optional[str] = None
+    custom_domain: Optional[str] = None
     description: Optional[str] = None
     html_content: Optional[str] = None
     css_content: Optional[str] = None
     js_content: Optional[str] = None
 
+class WebsiteDomainUpdate(BaseModel):
+    subdomain: str
+    custom_domain: Optional[str] = None
+    site_name: Optional[str] = None
+    description: Optional[str] = None
+
 class WebsiteResponse(BaseModel):
     id: str
     subdomain: str
+    custom_domain: Optional[str] = None
     site_name: str
     description: Optional[str] = None
     hosted_url: str
+    username: Optional[str] = None
     files_count: int
     total_size: int
     is_active: bool

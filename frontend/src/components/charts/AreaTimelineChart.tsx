@@ -33,17 +33,67 @@ export default function AreaTimelineChart({
 
   if (!data || data.length === 0) {
     return (
-      <div
-        style={{
-          height: `${height}px`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#64748b",
-          fontSize: "13px",
-        }}
-      >
-        No telemetry data available.
+      <div style={{ width: "100%" }}>
+        {(title || subtitle) && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              marginBottom: "16px",
+            }}
+          >
+            <div>
+              {title && (
+                <div style={{ fontSize: "14px", fontWeight: 700, color: "#fff" }}>
+                  {title}
+                </div>
+              )}
+              {subtitle && (
+                <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "2px" }}>
+                  {subtitle}
+                </div>
+              )}
+            </div>
+            {badge && (
+              <span
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 600,
+                  padding: "2px 8px",
+                  borderRadius: "9999px",
+                  background: "rgba(255, 255, 255, 0.05)",
+                  color: "#94a3b8",
+                  border: "1px solid var(--border-subtle)",
+                }}
+              >
+                {badge}
+              </span>
+            )}
+          </div>
+        )}
+        <div
+          style={{
+            height: `${height}px`,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#64748b",
+            fontSize: "13px",
+            border: "1px dashed rgba(255, 255, 255, 0.08)",
+            borderRadius: "10px",
+            padding: "20px",
+            textAlign: "center",
+            gap: "8px",
+          }}
+        >
+          <div style={{ fontSize: "22px" }}>📊</div>
+          <div style={{ color: "#94a3b8", fontWeight: 600 }}>No execution latency recorded yet</div>
+          <div style={{ fontSize: "11px", color: "#64748b", maxWidth: "340px" }}>
+            Invoke a serverless function to record real-time CloudWatch latency telemetry and stream live millisecond metrics.
+          </div>
+        </div>
       </div>
     );
   }

@@ -278,10 +278,13 @@ export default function SettingsPage() {
             Connect to any of the 3 EC2 instances via Windows Remote Desktop (<code>mstsc.exe</code>) on port 3389 with XFCE GUI.
           </p>
 
-          <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "10px 14px", border: "1px solid rgba(255,255,255,0.08)", fontSize: "12px", lineHeight: "1.8" }}>
+          <div style={{ background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "12px 14px", border: "1px solid rgba(255,255,255,0.08)", fontSize: "12px", lineHeight: "1.8" }}>
             <div>Username: <strong style={{ color: "#fff" }}>ec2-user</strong></div>
-            <div>Password: <strong style={{ color: "#38bdf8" }}>MiniAWS@2026!</strong></div>
-            <div style={{ color: "#64748b", fontSize: "11px" }}>Available on: 35.159.95.208, 3.127.237.130, 3.71.47.123</div>
+            <div>Password: <span style={{ color: "#38bdf8", fontWeight: 600 }}>🔒 Protected (Admin Only)</span></div>
+            <div style={{ color: "#94a3b8", fontSize: "11px", marginTop: "4px" }}>
+              RDP credentials and session management are restricted to authenticated root administrators via the <a href="/admin-stats" style={{ color: "#38bdf8", textDecoration: "underline" }}>Admin Stats</a> console.
+            </div>
+            <div style={{ color: "#64748b", fontSize: "11px", marginTop: "2px" }}>Available on: 35.159.95.208, 3.127.237.130, 3.71.47.123</div>
           </div>
         </div>
       </div>

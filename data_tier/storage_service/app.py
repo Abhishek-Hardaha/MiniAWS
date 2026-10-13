@@ -27,9 +27,18 @@ os.makedirs(SITES_ROOT, exist_ok=True)
 class SiteDeployRequest(BaseModel):
     user_id: str
     site_id: str
+    username: Optional[str] = None
+    subdomain: Optional[str] = None
     html_content: str
     css_content: Optional[str] = None
     js_content: Optional[str] = None
+
+class SiteDomainUpdateRequest(BaseModel):
+    user_id: str
+    site_id: str
+    username: str
+    old_subdomain: Optional[str] = None
+    new_subdomain: str
 
 class SiteDeleteRequest(BaseModel):
     user_id: str
@@ -244,6 +253,18 @@ def deploy_website_code(req: SiteDeployRequest):
             f.write(req.js_content)
         total_size += len(req.js_content.encode("utf-8"))
         files_count += 1
+
+    # Create /var/www/sites/{username}/{subdomain} symlink
+    if req.username and req.subdomain:
+        uname_dir = os.path.join(SITES_ROOT, req.username)
+        os.makedirs(uname_dir, exist_ok=True)
+        link_path = os.path.join(uname_dir, req.subdomain)
+        try:
+            if os.path.islink(link_path) or os.path.exists(link_path):
+                os.remove(link_path)
+            os.symlink(site_dir, link_path)
+        except Exception:
+            pass
         
     return {
         "status": "deployed",
@@ -251,6 +272,33 @@ def deploy_website_code(req: SiteDeployRequest):
         "site_path": site_dir,
         "files_count": files_count,
         "total_size": total_size
+    }
+
+@app.post("/sites/update_domain")
+def update_site_domain(req: SiteDomainUpdateRequest):
+    site_dir = os.path.join(SITES_ROOT, req.user_id, req.site_id)
+    uname_dir = os.path.join(SITES_ROOT, req.username)
+    os.makedirs(uname_dir, exist_ok=True)
+
+    if req.old_subdomain:
+        old_link = os.path.join(uname_dir, req.old_subdomain)
+        if os.path.islink(old_link) or os.path.exists(old_link):
+            try:
+                os.remove(old_link)
+            except Exception:
+                pass
+
+    new_link = os.path.join(uname_dir, req.new_subdomain)
+    try:
+        if os.path.islink(new_link) or os.path.exists(new_link):
+            os.remove(new_link)
+        os.symlink(site_dir, new_link)
+    except Exception:
+        pass
+
+    return {
+        "status": "updated",
+        "hosted_url": f"/sites/{req.username}/{req.new_subdomain}/"
     }
 
 @app.get("/sites/content")

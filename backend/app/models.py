@@ -10,12 +10,28 @@ class User(Base):
 
     id = Column(String(64), primary_key=True)
     email = Column(String(255), unique=True, nullable=False)
+    username = Column(String(100), unique=True, nullable=True)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(255), nullable=False)
     avatar_url = Column(String(500), nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+    @property
+    def user_name(self) -> str:
+        if self.username:
+            return self.username
+        if self.email:
+            raw = self.email.split("@")[0].split(".")[0]
+            cleaned = "".join(c for c in raw if c.isalnum() or c in "-_").lower()
+            if cleaned:
+                return cleaned
+        if self.full_name:
+            cleaned = "".join(c for c in self.full_name if c.isalnum() or c in "-_").lower()
+            if cleaned:
+                return cleaned
+        return "user"
 
     quotas = relationship("UserQuota", back_populates="user", uselist=False, cascade="all, delete-orphan")
     files = relationship("StorageFile", back_populates="user", cascade="all, delete-orphan")
@@ -62,6 +78,7 @@ class HostedWebsite(Base):
     id = Column(String(64), primary_key=True)
     user_id = Column(String(64), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     subdomain = Column(String(100), unique=True, nullable=False)
+    custom_domain = Column(String(255), nullable=True)
     site_name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     site_path = Column(String(500), nullable=False)

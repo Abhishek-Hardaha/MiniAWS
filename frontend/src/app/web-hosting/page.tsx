@@ -18,8 +18,10 @@ import {
   Layers,
   Cpu,
   ShieldCheck,
+  Settings,
+  Link as LinkIcon,
 } from "lucide-react";
-import { listWebsites, createWebsite, updateWebsite, deleteWebsite, getWebsiteSource } from "@/lib/api";
+import { listWebsites, createWebsite, updateWebsite, deleteWebsite, getWebsiteSource, updateWebsiteDomain } from "@/lib/api";
 import RadialProgressGauge from "@/components/charts/RadialProgressGauge";
 import BarMetricChart, { BarMetricItem } from "@/components/charts/BarMetricChart";
 
@@ -82,11 +84,22 @@ export default function WebHostingPage() {
   // Form state
   const [siteName, setSiteName] = useState("");
   const [subdomain, setSubdomain] = useState("");
+  const [customDomain, setCustomDomain] = useState("");
   const [description, setDescription] = useState("");
   const [htmlContent, setHtmlContent] = useState(DEFAULT_SAMPLE_HTML);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+
+  // Domain & URL Edit Modal state
+  const [domainModalOpen, setDomainModalOpen] = useState(false);
+  const [domainSite, setDomainSite] = useState<any | null>(null);
+  const [editSubdomain, setEditSubdomain] = useState("");
+  const [editCustomDomain, setEditCustomDomain] = useState("");
+  const [editSiteName, setEditSiteName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [domainUpdating, setDomainUpdating] = useState(false);
+  const [domainErrorMsg, setDomainErrorMsg] = useState<string | null>(null);
 
   const loadWebsites = () => {
     listWebsites()
@@ -155,17 +168,50 @@ export default function WebHostingPage() {
       await createWebsite({
         site_name: siteName,
         subdomain: subdomain.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+        custom_domain: customDomain.trim() || undefined,
         description,
         html_content: htmlContent,
       });
       setModalOpen(false);
       setSiteName("");
       setSubdomain("");
+      setCustomDomain("");
       setDescription("");
       setUploadedFileName(null);
       loadWebsites();
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to deploy website");
+    }
+  };
+
+  const handleOpenDomainSettings = (site: any) => {
+    setDomainSite(site);
+    setEditSubdomain(site.subdomain || "");
+    setEditCustomDomain(site.custom_domain || "");
+    setEditSiteName(site.site_name || "");
+    setEditDescription(site.description || "");
+    setDomainErrorMsg(null);
+    setDomainModalOpen(true);
+  };
+
+  const handleSaveDomainSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!domainSite) return;
+    setDomainUpdating(true);
+    setDomainErrorMsg(null);
+    try {
+      await updateWebsiteDomain(domainSite.id, {
+        subdomain: editSubdomain.toLowerCase().trim().replace(/[^a-z0-9-]/g, "-"),
+        custom_domain: editCustomDomain.trim() || undefined,
+        site_name: editSiteName.trim(),
+        description: editDescription.trim(),
+      });
+      setDomainModalOpen(false);
+      loadWebsites();
+    } catch (err: any) {
+      setDomainErrorMsg(err.message || "Failed to update domain and URL");
+    } finally {
+      setDomainUpdating(false);
     }
   };
 
@@ -346,9 +392,30 @@ export default function WebHostingPage() {
                 <span className="status-pill status-success">Live</span>
               </div>
 
-              <p style={{ color: "#94a3b8", fontSize: "13px", lineHeight: 1.5, marginBottom: "16px" }}>
+              <p style={{ color: "#94a3b8", fontSize: "13px", lineHeight: 1.5, marginBottom: "12px" }}>
                 {site.description || "Static web application hosted on Mini AWS Data Tier."}
               </p>
+
+              {/* Custom Domain Badge (if configured) */}
+              {site.custom_domain && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    background: "rgba(56, 189, 248, 0.1)",
+                    border: "1px solid rgba(56, 189, 248, 0.25)",
+                    borderRadius: "8px",
+                    padding: "6px 12px",
+                    marginBottom: "14px",
+                    fontSize: "12px",
+                    color: "#38bdf8",
+                  }}
+                >
+                  <Globe size={13} />
+                  <span>Custom Domain: <strong>{site.custom_domain}</strong></span>
+                </div>
+              )}
 
               {/* Endpoint Link Box */}
               <div
@@ -393,12 +460,21 @@ export default function WebHostingPage() {
             </div>
 
             {/* Actions Footer */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "14px", borderTop: "1px solid var(--border-subtle)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "14px", borderTop: "1px solid var(--border-subtle)", flexWrap: "wrap", gap: "10px" }}>
               <div style={{ fontSize: "11px", color: "#64748b" }}>
                 Created: {new Date(site.created_at).toLocaleDateString()}
               </div>
 
               <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  className="btn-secondary"
+                  style={{ padding: "6px 12px", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}
+                  onClick={() => handleOpenDomainSettings(site)}
+                  title="Configure domain and custom URL slug"
+                >
+                  <Settings size={13} color="#60a5fa" />
+                  <span>Domain &amp; URL</span>
+                </button>
                 <button
                   className="btn-secondary"
                   style={{ padding: "6px 12px", fontSize: "12px" }}
@@ -526,6 +602,20 @@ export default function WebHostingPage() {
                     value={subdomain}
                     onChange={(e) => setSubdomain(e.target.value)}
                   />
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "16px" }}>
+                <label className="form-label">Custom Domain (optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. site.mycompany.io or app.portfolio.dev"
+                  className="form-input"
+                  value={customDomain}
+                  onChange={(e) => setCustomDomain(e.target.value)}
+                />
+                <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
+                  Live URL will be: <code style={{ color: "#60a5fa" }}>/sites/&lt;username&gt;/{subdomain || "your-slug"}/</code>
                 </div>
               </div>
 
@@ -657,6 +747,116 @@ export default function WebHostingPage() {
                 style={{ width: "100%", height: "100%", border: "none" }}
               />
             </div>
+          </div>
+        </div>
+      )}
+      {/* Domain & URL Settings Modal */}
+      {domainModalOpen && domainSite && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: "580px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Settings size={20} color="#38bdf8" />
+                <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#fff" }}>
+                  Domain &amp; URL Settings
+                </h2>
+              </div>
+              <button className="icon-btn" onClick={() => setDomainModalOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {domainErrorMsg && (
+              <div
+                style={{
+                  background: "rgba(239, 68, 68, 0.12)",
+                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                  borderRadius: "10px",
+                  padding: "10px 14px",
+                  marginBottom: "16px",
+                  color: "#f87171",
+                  fontSize: "13px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <AlertCircle size={16} />
+                <span>{domainErrorMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveDomainSettings}>
+              <div className="form-group" style={{ marginBottom: "16px" }}>
+                <label className="form-label">Website Name</label>
+                <input
+                  type="text"
+                  required
+                  className="form-input"
+                  value={editSiteName}
+                  onChange={(e) => setEditSiteName(e.target.value)}
+                  placeholder="e.g. Agentsentry Case Study"
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "16px" }}>
+                <label className="form-label">Subdomain Slug (URL Path)</label>
+                <input
+                  type="text"
+                  required
+                  className="form-input"
+                  value={editSubdomain}
+                  onChange={(e) => setEditSubdomain(e.target.value)}
+                  placeholder="e.g. agentsentry-case-study"
+                />
+                <div style={{ fontSize: "12px", color: "#60a5fa", marginTop: "6px", fontFamily: "var(--font-mono)" }}>
+                  Live URL: /sites/&lt;username&gt;/{editSubdomain.toLowerCase().trim().replace(/[^a-z0-9-]/g, "-")}/
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "16px" }}>
+                <label className="form-label">Custom Domain (Optional)</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={editCustomDomain}
+                  onChange={(e) => setEditCustomDomain(e.target.value)}
+                  placeholder="e.g. site.mycompany.io or app.agentsentry.ai"
+                />
+                <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>
+                  Point your DNS CNAME record to your MiniAWS Data Tier public IP or hostname.
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: "20px" }}>
+                <label className="form-label">Description (Optional)</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Website description"
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setDomainModalOpen(false)}
+                  disabled={domainUpdating}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={domainUpdating}
+                >
+                  {domainUpdating ? "Saving..." : "Save Domain Settings"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -58,30 +58,23 @@ export default function MonitoringPage() {
     loadData();
   }, [statusFilter]);
 
-  // Compute Latency Data Points from real execution logs (chronological order)
+  // Compute Latency Data Points strictly from real execution logs (chronological order)
   const latencyPoints: ChartDataPoint[] = logs && logs.length > 0
-    ? [...logs].reverse().slice(-15).map((log, idx) => {
-        const time = new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    ? [...logs].reverse().slice(-15).map((log) => {
+        const time = new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         return {
           label: time,
-          value: Number(log.duration_ms) || 0.4,
+          value: Number(log.duration_ms) || 0,
           secondaryLabel: `${log.function_name} (${log.status})`,
         };
       })
-    : [
-        { label: "10m ago", value: 0.38, secondaryLabel: "Baseline benchmark" },
-        { label: "8m ago", value: 0.42, secondaryLabel: "Cron runner" },
-        { label: "6m ago", value: 0.51, secondaryLabel: "API trigger" },
-        { label: "4m ago", value: 0.39, secondaryLabel: "Scheduled run" },
-        { label: "2m ago", value: 0.45, secondaryLabel: "Scheduled run" },
-        { label: "Live", value: 0.40, secondaryLabel: "Latest execution" },
-      ];
+    : [];
 
-  // Compute Success vs Error Donut Segments
+  // Compute Success vs Error Donut Segments strictly from real counts
   const statusSegments: DonutSegment[] = [
     {
       label: "Success",
-      value: stats.success_count || 1,
+      value: stats.success_count || 0,
       color: "#10b981",
     },
     {
@@ -216,8 +209,8 @@ export default function MonitoringPage() {
             segments={statusSegments}
             size={160}
             strokeWidth={16}
-            centerPrimary={`${stats.success_rate_percent}%`}
-            centerSecondary="Success"
+            centerPrimary={stats.total_invocations > 0 ? `${stats.success_rate_percent}%` : "0%"}
+            centerSecondary={stats.total_invocations > 0 ? "Success" : "Idle"}
             title="Execution Status Health"
           />
 
