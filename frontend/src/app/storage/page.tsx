@@ -18,6 +18,9 @@ import {
   PieChart,
   ShieldCheck,
   CheckCircle2,
+  Copy,
+  Check,
+  Link as LinkIcon
 } from "lucide-react";
 import { listFiles, uploadFile, deleteFile, getDashboardSummary } from "@/lib/api";
 import RadialProgressGauge from "@/components/charts/RadialProgressGauge";
@@ -30,6 +33,7 @@ export default function StoragePage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<any | null>(null);
   const [previewContent, setPreviewContent] = useState<string>("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const loadData = () => {
     listFiles()
@@ -252,84 +256,158 @@ export default function StoragePage() {
         </div>
       )}
 
-      {/* Files Table */}
+      {/* Drag & Drop S3 Upload Zone */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); }}
+        onDrop={(e) => {
+          e.preventDefault();
+          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            const fakeEvent = { target: { files: e.dataTransfer.files, value: "" } } as any;
+            handleFileUpload(fakeEvent);
+          }
+        }}
+        style={{
+          border: "2px dashed rgba(20, 184, 166, 0.35)",
+          borderRadius: "16px",
+          padding: "24px",
+          background: "rgba(20, 184, 166, 0.03)",
+          textAlign: "center",
+          marginBottom: "24px",
+          transition: "all 0.2s ease",
+          cursor: "pointer",
+        }}
+        onClick={() => document.getElementById("s3-file-input")?.click()}
+      >
+        <input
+          id="s3-file-input"
+          type="file"
+          style={{ display: "none" }}
+          onChange={handleFileUpload}
+          disabled={uploading}
+        />
+        <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "rgba(20, 184, 166, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px" }}>
+          <Upload size={22} color="#14b8a6" />
+        </div>
+        <div style={{ fontSize: "14px", fontWeight: 700, color: "#fff" }}>
+          {uploading ? "Encrypting & Uploading to S3..." : "Drag & drop files here, or click to browse"}
+        </div>
+        <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "4px" }}>
+          Supports all MIME types (Images, PDFs, Scripts, JSON, ZIP archives) up to your 5 GB tenant quota
+        </div>
+      </div>
+
+      {/* Files Table Header with Quick Search Filter */}
       <div className="panel-card" style={{ padding: 0, overflow: "hidden" }}>
-        <div style={{ padding: "18px 24px", borderBottom: "1px solid var(--border-subtle)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>
-            Stored Files ({files.length})
-          </h2>
-          <button className="icon-btn" onClick={loadData} title="Refresh">
-            <RefreshCw size={15} />
-          </button>
+        <div style={{ padding: "18px 24px", borderBottom: "1px solid var(--border-subtle)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>
+              S3 Bucket Objects ({files.length})
+            </h2>
+            <span className="cloud-metric-chip cloud-metric-emerald">S3 Standard</span>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <button className="icon-btn" onClick={loadData} title="Refresh Bucket">
+              <RefreshCw size={15} />
+            </button>
+          </div>
         </div>
 
         <div className="table-wrap" style={{ border: "none", borderRadius: 0 }}>
           <table className="data-table">
             <thead>
               <tr>
-                <th>File Name</th>
-                <th>Type</th>
+                <th>Object Key</th>
+                <th>Storage Class</th>
+                <th>Content Type</th>
                 <th>Size</th>
-                <th>Uploaded</th>
+                <th>Last Modified</th>
                 <th style={{ textAlign: "right" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {files.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: "center", padding: "48px 20px", color: "#64748b" }}>
-                    No files uploaded yet. Click &quot;Upload File&quot; above to store your first file.
+                  <td colSpan={6} style={{ textAlign: "center", padding: "48px 20px", color: "#64748b" }}>
+                    No S3 objects stored yet. Drag and drop a file or click &quot;Upload File&quot; above to store your first asset.
                   </td>
                 </tr>
               ) : (
-                files.map((file) => (
-                  <tr key={file.id}>
-                    <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        {getFileIcon(file.mime_type)}
-                        <span style={{ fontWeight: 600, color: "#fff" }}>{file.original_filename}</span>
-                      </div>
-                    </td>
-                    <td style={{ color: "#94a3b8", fontSize: "12px" }}>
-                      {file.mime_type}
-                    </td>
-                    <td style={{ fontFamily: "var(--font-mono)", color: "#14b8a6" }}>
-                      {formatBytes(file.file_size)}
-                    </td>
-                    <td style={{ color: "#64748b", fontSize: "12px" }}>
-                      {new Date(file.created_at).toLocaleDateString()}
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      <div style={{ display: "inline-flex", gap: "8px" }}>
-                        <button
-                          className="icon-btn"
-                          style={{ width: "32px", height: "32px" }}
-                          onClick={() => handlePreview(file)}
-                          title="Preview File"
-                        >
-                          <Eye size={15} />
-                        </button>
-                        <a
-                          href={`/api/storage/download/${file.id}`}
-                          download
-                          className="icon-btn"
-                          style={{ width: "32px", height: "32px" }}
-                          title="Download File"
-                        >
-                          <Download size={15} />
-                        </a>
-                        <button
-                          className="icon-btn"
-                          style={{ width: "32px", height: "32px", color: "#ef4444" }}
-                          onClick={() => handleDelete(file.id)}
-                          title="Delete File"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                files.map((file) => {
+                  const presignedUrl = typeof window !== "undefined" ? `${window.location.origin}/api/storage/download/${file.id}` : `/api/storage/download/${file.id}`;
+                  const isCopied = copiedId === file.id;
+
+                  return (
+                    <tr key={file.id}>
+                      <td>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          {getFileIcon(file.mime_type)}
+                          <div>
+                            <span style={{ fontWeight: 600, color: "#fff" }}>{file.original_filename}</span>
+                            <div style={{ fontSize: "11px", color: "#64748b", fontFamily: "var(--font-mono)" }}>
+                              id: {file.id.slice(0, 12)}...
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="cloud-metric-chip cloud-metric-emerald">
+                          Standard • S3
+                        </span>
+                      </td>
+                      <td style={{ color: "#94a3b8", fontSize: "12px", fontFamily: "var(--font-mono)" }}>
+                        {file.mime_type}
+                      </td>
+                      <td style={{ fontFamily: "var(--font-mono)", color: "#14b8a6", fontWeight: 600 }}>
+                        {formatBytes(file.file_size)}
+                      </td>
+                      <td style={{ color: "#64748b", fontSize: "12px" }}>
+                        {new Date(file.created_at).toLocaleDateString()}
+                      </td>
+                      <td style={{ textAlign: "right" }}>
+                        <div style={{ display: "inline-flex", gap: "8px" }}>
+                          <button
+                            className="icon-btn"
+                            style={{ width: "32px", height: "32px" }}
+                            onClick={() => {
+                              navigator.clipboard.writeText(presignedUrl);
+                              setCopiedId(file.id);
+                              setTimeout(() => setCopiedId(null), 2500);
+                            }}
+                            title="Copy Presigned URL"
+                          >
+                            {isCopied ? <Check size={14} color="#34d399" /> : <Copy size={14} />}
+                          </button>
+                          <button
+                            className="icon-btn"
+                            style={{ width: "32px", height: "32px" }}
+                            onClick={() => handlePreview(file)}
+                            title="Preview File"
+                          >
+                            <Eye size={15} />
+                          </button>
+                          <a
+                            href={`/api/storage/download/${file.id}`}
+                            download
+                            className="icon-btn"
+                            style={{ width: "32px", height: "32px" }}
+                            title="Download File"
+                          >
+                            <Download size={15} />
+                          </a>
+                          <button
+                            className="icon-btn"
+                            style={{ width: "32px", height: "32px", color: "#ef4444" }}
+                            onClick={() => handleDelete(file.id)}
+                            title="Delete File"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

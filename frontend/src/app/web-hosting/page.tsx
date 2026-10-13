@@ -8,6 +8,7 @@ import {
   Code2,
   Trash2,
   CheckCircle,
+  Check,
   Eye,
   RefreshCw,
   Plus,
@@ -247,10 +248,13 @@ export default function WebHostingPage() {
     }
   };
 
-  const handleCopy = (url: string) => {
+  const [copiedSiteId, setCopiedSiteId] = useState<string | null>(null);
+
+  const handleCopy = (url: string, siteId: string) => {
     const fullUrl = `${window.location.origin}${url}`;
     navigator.clipboard.writeText(fullUrl);
-    alert(`Copied URL to clipboard: ${fullUrl}`);
+    setCopiedSiteId(siteId);
+    setTimeout(() => setCopiedSiteId(null), 2500);
   };
 
   const websiteBarItems: BarMetricItem[] = [
@@ -440,18 +444,18 @@ export default function WebHostingPage() {
                   <button
                     className="icon-btn"
                     style={{ width: "28px", height: "28px" }}
-                    onClick={() => handleCopy(site.hosted_url)}
+                    onClick={() => handleCopy(site.hosted_url, site.id)}
                     title="Copy URL"
                   >
-                    <Copy size={13} />
+                    {copiedSiteId === site.id ? <Check size={13} color="#34d399" /> : <Copy size={13} />}
                   </button>
                   <a
                     href={site.hosted_url}
                     target="_blank"
                     rel="noreferrer"
                     className="icon-btn"
-                    style={{ width: "28px", height: "28px" }}
-                    title="Open in new tab"
+                    style={{ width: "28px", height: "28px", color: "#38bdf8" }}
+                    title="Open website in new tab"
                   >
                     <ExternalLink size={13} />
                   </a>

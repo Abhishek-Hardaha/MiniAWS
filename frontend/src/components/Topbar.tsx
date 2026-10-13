@@ -62,6 +62,29 @@ export default function Topbar() {
 
       {/* Right Actions */}
       <div className="topbar-actions">
+        {/* Cluster Telemetry Quick Pill */}
+        <Link
+          href="/instances"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "7px",
+            padding: "6px 12px",
+            background: "rgba(16, 185, 129, 0.08)",
+            border: "1px solid rgba(16, 185, 129, 0.25)",
+            borderRadius: "8px",
+            color: "#34d399",
+            fontSize: "12px",
+            fontWeight: 600,
+            textDecoration: "none",
+            marginRight: "6px",
+          }}
+          title="EC2 Fleet Health: 3 Nodes Online"
+        >
+          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 6px #10b981" }} />
+          <span>3 Nodes Live</span>
+        </Link>
+
         {/* Admin Stats Button */}
         <Link
           href="/admin-stats"
