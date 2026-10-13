@@ -29,6 +29,10 @@ const Hyperspeed = dynamic(() => import("@/components/Hyperspeed"), {
   ssr: false,
 });
 
+const TechText = dynamic(() => import("@/components/TechText"), {
+  ssr: false,
+});
+
 export default function HomePage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -136,6 +140,35 @@ export default function HomePage() {
             poleColors={['#03b3c3']}
             interactive
           />
+        </div>
+
+        {/* TechText Wordmark Floating Over Hyperspeed */}
+        <div className="hero-techtext-overlay">
+          <div className="hero-techtext-badge">
+            <span className="hero-techtext-dot" />
+            <span>CLOUD PLATFORM</span>
+          </div>
+          <div className="hero-techtext-stage">
+            <TechText
+              text="StackSync"
+              fontFamily="'Plus Jakarta Sans', -apple-system, sans-serif"
+              fontWeight={800}
+              fontSize={80}
+              letterSpacing={-0.03}
+              color="#ffffff"
+              accentColor="#38bdf8"
+              reveal="letter"
+              dashLength={4}
+              dashGap={2}
+              specks={16}
+              strokeWidth={1.8}
+              selection={true}
+              labels={true}
+              draggable={true}
+              sweep={true}
+              speed={0.8}
+            />
+          </div>
         </div>
       </section>
 
