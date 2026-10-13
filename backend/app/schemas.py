@@ -6,7 +6,6 @@ from datetime import datetime, date
 class UserBase(BaseModel):
     email: str
     full_name: str
-    plan_tier: Optional[str] = "Developer"
 
 class UserCreate(UserBase):
     password: str
@@ -48,7 +47,6 @@ class QuotaSummary(BaseModel):
     invocations_month: int
     invocations_max: int
     invocations_percent: float
-    plan_tier: str
 
 # Storage
 class StorageFileResponse(BaseModel):

@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS users (
     hashed_password VARCHAR(255) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
     avatar_url VARCHAR(500),
-    plan_tier VARCHAR(50) DEFAULT 'Developer',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -141,13 +140,12 @@ CREATE TABLE IF NOT EXISTS daily_usage (
 
 -- Seed User 1: Aarav Sharma (Matches prompt UI perfectly)
 -- Password hash for 'password123' using pbkdf2_sha256
-INSERT INTO users (id, email, hashed_password, full_name, plan_tier)
+INSERT INTO users (id, email, hashed_password, full_name)
 VALUES (
     'usr_aarav_sharma',
     'aarav@miniaws.com',
     'pbkdf2:sha256:260000$saltsalt$1210878e1c6680a6b7d34190c8b6b06346bc775796245d8b8e0b6ea0aa8838d7',
-    'Aarav Sharma',
-    'Developer'
+    'Aarav Sharma'
 ) ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO user_quotas (id, user_id, max_storage_bytes, max_websites, max_functions, max_api_routes, max_daily_api_requests, max_monthly_invocations)
@@ -163,25 +161,24 @@ VALUES (
 ) ON CONFLICT (user_id) DO NOTHING;
 
 -- Seed User 2: Sarah Connor (For testing multi-user isolation)
-INSERT INTO users (id, email, hashed_password, full_name, plan_tier)
+INSERT INTO users (id, email, hashed_password, full_name)
 VALUES (
     'usr_sarah_connor',
     'sarah@miniaws.com',
     'pbkdf2:sha256:260000$saltsalt$1210878e1c6680a6b7d34190c8b6b06346bc775796245d8b8e0b6ea0aa8838d7',
-    'Sarah Connor',
-    'Starter'
+    'Sarah Connor'
 ) ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO user_quotas (id, user_id, max_storage_bytes, max_websites, max_functions, max_api_routes, max_daily_api_requests, max_monthly_invocations)
 VALUES (
     'qta_sarah',
     'usr_sarah_connor',
-    1073741824, -- 1 GB
-    1,
-    2,
-    2,
-    100,
-    500
+    5368709120, -- 5 GB
+    3,
+    5,
+    5,
+    500,
+    2000
 ) ON CONFLICT (user_id) DO NOTHING;
 
 -- Seed Functions for Aarav Sharma

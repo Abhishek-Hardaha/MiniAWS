@@ -246,7 +246,7 @@ export default function LoginPage() {
               }}
             >
               <div style={{ fontWeight: 700 }}>Aarav Sharma</div>
-              <div style={{ fontSize: "10px", color: "#64748b" }}>Developer Plan (5 GB)</div>
+              <div style={{ fontSize: "10px", color: "#64748b" }}>aarav@miniaws.com</div>
             </button>
 
             <button
@@ -266,7 +266,7 @@ export default function LoginPage() {
               }}
             >
               <div style={{ fontWeight: 700 }}>Sarah Connor</div>
-              <div style={{ fontSize: "10px", color: "#64748b" }}>Starter Plan (1 GB)</div>
+              <div style={{ fontSize: "10px", color: "#64748b" }}>sarah@miniaws.com</div>
             </button>
           </div>
         </div>

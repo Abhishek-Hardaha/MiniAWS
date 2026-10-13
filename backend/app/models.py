@@ -13,7 +13,6 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(255), nullable=False)
     avatar_url = Column(String(500), nullable=True)
-    plan_tier = Column(String(50), default="Developer")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
     updated_at = Column(DateTime(timezone=True), default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)

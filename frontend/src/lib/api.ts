@@ -211,7 +211,6 @@ export const registerUser = async (formData: {
   email: string;
   password: string;
   full_name: string;
-  plan_tier?: string;
 }) => {
   const data = await fetchApi<{ access_token: string; token_type: string; user: any }>("/api/auth/register", {
     method: "POST",

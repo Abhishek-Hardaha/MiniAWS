@@ -171,9 +171,9 @@ export default function HomePage() {
             <h2 className="panel-title">Your Cloud Usage</h2>
             <div
               className="panel-action-btn"
-              onClick={() => alert(`Current Plan: ${quotas.plan_tier || "Developer"}\n\nStorage Quota: 5 GB\nFunction Slots: 3\nDaily API Quota: 500 requests\nWebsites: 1`)}
+              onClick={() => alert(`Mini AWS Cloud Quotas:\n\nStorage Quota: 5 GB\nFunction Slots: 5\nDaily API Quota: 500 requests\nWebsites: 3`)}
             >
-              <span>Current Plan</span>
+              <span>Quota Limits</span>
               <ChevronDown size={14} />
             </div>
           </div>

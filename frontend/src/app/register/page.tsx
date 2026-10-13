@@ -3,48 +3,14 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Cloud, Lock, Mail, User, Eye, EyeOff, ArrowRight, AlertCircle, CheckCircle2, Zap } from "lucide-react";
+import { Cloud, Lock, Mail, User, Eye, EyeOff, ArrowRight, AlertCircle, ShieldCheck } from "lucide-react";
 import { registerUser } from "@/lib/api";
-
-const PLAN_OPTIONS = [
-  {
-    tier: "Developer",
-    storage: "5 GB",
-    functions: "5 Functions",
-    websites: "3 Websites",
-    dailyReq: "500 Req/Day",
-    badge: "Recommended",
-    borderColor: "rgba(56, 189, 248, 0.4)",
-    activeBg: "rgba(56, 189, 248, 0.12)",
-  },
-  {
-    tier: "Starter",
-    storage: "1 GB",
-    functions: "2 Functions",
-    websites: "1 Website",
-    dailyReq: "100 Req/Day",
-    badge: "Free Tier",
-    borderColor: "rgba(168, 85, 247, 0.4)",
-    activeBg: "rgba(168, 85, 247, 0.12)",
-  },
-  {
-    tier: "Pro",
-    storage: "20 GB",
-    functions: "15 Functions",
-    websites: "10 Websites",
-    dailyReq: "2,000 Req/Day",
-    badge: "High Scale",
-    borderColor: "rgba(236, 72, 153, 0.4)",
-    activeBg: "rgba(236, 72, 153, 0.12)",
-  },
-];
 
 export default function RegisterPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [planTier, setPlanTier] = useState("Developer");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -67,7 +33,6 @@ export default function RegisterPage() {
         full_name: fullName,
         email,
         password,
-        plan_tier: planTier,
       });
       router.push("/");
     } catch (err: any) {
@@ -92,7 +57,7 @@ export default function RegisterPage() {
       <div
         style={{
           width: "100%",
-          maxWidth: "520px",
+          maxWidth: "460px",
           background: "rgba(13, 20, 36, 0.85)",
           backdropFilter: "blur(24px)",
           border: "1px solid rgba(255, 255, 255, 0.1)",
@@ -123,7 +88,7 @@ export default function RegisterPage() {
             Create Mini AWS Account
           </h1>
           <p style={{ color: "#94a3b8", fontSize: "14px", marginTop: "6px" }}>
-            Get your own isolated cloud storage, lambda functions &amp; API gateway
+            Access isolated cloud storage, functions &amp; API gateway
           </p>
         </div>
 
@@ -208,7 +173,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Password */}
-          <div style={{ marginBottom: "20px" }}>
+          <div style={{ marginBottom: "24px" }}>
             <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#cbd5e1", marginBottom: "8px" }}>
               Password
             </label>
@@ -252,43 +217,25 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Plan Tier Selection */}
-          <div style={{ marginBottom: "24px" }}>
-            <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#cbd5e1", marginBottom: "10px" }}>
-              Select Initial Cloud Quota Tier
-            </label>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
-              {PLAN_OPTIONS.map((plan) => {
-                const isSelected = planTier === plan.tier;
-                return (
-                  <div
-                    key={plan.tier}
-                    onClick={() => setPlanTier(plan.tier)}
-                    style={{
-                      border: isSelected ? `2px solid ${plan.borderColor}` : "1px solid rgba(255, 255, 255, 0.1)",
-                      background: isSelected ? plan.activeBg : "rgba(255, 255, 255, 0.03)",
-                      borderRadius: "14px",
-                      padding: "12px 10px",
-                      cursor: "pointer",
-                      textAlign: "center",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    <div style={{ fontSize: "11px", color: "#60a5fa", fontWeight: 700, marginBottom: "4px" }}>
-                      {plan.badge}
-                    </div>
-                    <div style={{ fontWeight: 800, fontSize: "14px", color: "#fff", marginBottom: "6px" }}>
-                      {plan.tier}
-                    </div>
-                    <div style={{ fontSize: "11px", color: "#94a3b8", lineHeight: 1.4 }}>
-                      <div>{plan.storage}</div>
-                      <div>{plan.functions}</div>
-                      <div>{plan.websites}</div>
-                    </div>
-                  </div>
-                );
-              })}
+          {/* Cloud Quotas Summary Box */}
+          <div
+            style={{
+              background: "rgba(255, 255, 255, 0.03)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              borderRadius: "12px",
+              padding: "12px 14px",
+              marginBottom: "24px",
+              fontSize: "12px",
+              color: "#94a3b8",
+            }}
+          >
+            <div style={{ color: "#38bdf8", fontWeight: 700, marginBottom: "4px" }}>
+              Included Cloud Quotas:
             </div>
+            <div>• 5 GB S3 Storage &amp; File Hosting</div>
+            <div>• 5 Serverless Python Functions</div>
+            <div>• 3 Static Website Deployments</div>
+            <div>• 5 API Gateway Routes (500 req/day)</div>
           </div>
 
           {/* Submit */}
@@ -313,7 +260,7 @@ export default function RegisterPage() {
               opacity: loading ? 0.7 : 1,
             }}
           >
-            <span>{loading ? "Creating Cloud Account..." : "Create Account & Launch Console"}</span>
+            <span>{loading ? "Creating Account..." : "Create Account & Launch Console"}</span>
             <ArrowRight size={16} />
           </button>
         </form>

@@ -87,8 +87,7 @@ def get_user_quota_summary(db: Session, user: User) -> QuotaSummary:
         api_requests_percent=min(api_req_percent, 100.0),
         invocations_month=month_invocations,
         invocations_max=quota.max_monthly_invocations,
-        invocations_percent=min(inv_percent, 100.0),
-        plan_tier=user.plan_tier or "Developer"
+        invocations_percent=min(inv_percent, 100.0)
     )
 
 def check_storage_quota(db: Session, user: User, additional_bytes: int):
@@ -104,7 +103,7 @@ def check_storage_quota(db: Session, user: User, additional_bytes: int):
 
 def check_websites_quota(db: Session, user: User):
     quota = get_or_create_quota(db, user.id)
-    max_web = 1 if user.id == "usr_aarav_sharma" else quota.max_websites
+    max_web = quota.max_websites
     current_count = db.query(func.count(HostedWebsite.id)).filter(
         HostedWebsite.user_id == user.id
     ).scalar() or 0
@@ -116,14 +115,14 @@ def check_websites_quota(db: Session, user: User):
 
 def check_functions_quota(db: Session, user: User):
     quota = get_or_create_quota(db, user.id)
-    max_fn = 3 if user.id == "usr_aarav_sharma" else quota.max_functions
+    max_fn = quota.max_functions
     current_count = db.query(func.count(ServerlessFunction.id)).filter(
         ServerlessFunction.user_id == user.id
     ).scalar() or 0
     if current_count >= max_fn:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Function quota limit reached ({max_fn} max). Upgrade plan or delete an existing function."
+            detail=f"Function quota limit reached ({max_fn} max). Please delete an existing function before creating a new one."
         )
 
 def check_api_routes_quota(db: Session, user: User):

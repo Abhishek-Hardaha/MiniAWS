@@ -45,13 +45,11 @@ export default function SettingsPage() {
     invocations_month: 45,
     invocations_max: 2000,
     invocations_percent: 2.25,
-    plan_tier: "Developer",
   };
 
   const user = data?.user || {
     full_name: "Aarav Sharma",
     email: "aarav@miniaws.com",
-    plan_tier: "Developer",
   };
 
   const formatBytes = (bytes: number) => {
@@ -108,7 +106,7 @@ export default function SettingsPage() {
               borderRadius: "9999px",
             }}
           >
-            {quotas.plan_tier} Plan
+            Standard Cloud Quota
           </span>
           <div style={{ fontSize: "11px", color: "#64748b", marginTop: "6px" }}>
             Status: Active &amp; Verified

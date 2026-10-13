@@ -11,8 +11,8 @@ export default function Topbar() {
     email: "aarav@miniaws.com",
   });
   const [usersList, setUsersList] = useState<any[]>([
-    { id: "usr_aarav_sharma", full_name: "Aarav Sharma", email: "aarav@miniaws.com", plan_tier: "Developer" },
-    { id: "usr_sarah_connor", full_name: "Sarah Connor", email: "sarah@miniaws.com", plan_tier: "Starter" },
+    { id: "usr_aarav_sharma", full_name: "Aarav Sharma", email: "aarav@miniaws.com" },
+    { id: "usr_sarah_connor", full_name: "Sarah Connor", email: "sarah@miniaws.com" },
   ]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -161,7 +161,7 @@ export default function Topbar() {
                   >
                     <div>
                       <div>{u.full_name}</div>
-                      <div style={{ fontSize: "11px", color: "#64748b" }}>{u.plan_tier || "Developer"} Plan</div>
+                      <div style={{ fontSize: "11px", color: "#64748b" }}>{u.email}</div>
                     </div>
                     {isSelected && <Check size={16} color="#60a5fa" />}
                   </div>
