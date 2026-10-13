@@ -7,9 +7,9 @@ import { getStoredUserId, setStoredUserId, getStoredUser, setStoredUser, listUse
 
 export default function Topbar() {
   const [currentUser, setCurrentUser] = useState<{ id: string; full_name: string; email: string }>({
-    id: "usr_aarav_sharma",
-    full_name: "Aarav Sharma",
-    email: "aarav@miniaws.com",
+    id: "usr_3cc1265ef43f",
+    full_name: "Abhishek",
+    email: "abhishek.hardaha.0111@gmail.com",
   });
   const [usersList, setUsersList] = useState<any[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -25,8 +25,8 @@ export default function Topbar() {
       .then((users) => {
         if (users && users.length > 0) {
           setUsersList(users);
-          if (!stored && activeId) {
-            const active = users.find((u) => u.id === activeId);
+          if (!stored) {
+            const active = activeId ? users.find((u) => u.id === activeId) : users[0];
             if (active) setCurrentUser(active);
           }
         }
