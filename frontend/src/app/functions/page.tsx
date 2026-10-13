@@ -230,6 +230,61 @@ export default function FunctionsPage() {
         </button>
       </div>
 
+      {/* Execution Tier & Runner Status Banner */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(13, 20, 36, 0.8) 100%)",
+          border: "1px solid rgba(139, 92, 246, 0.25)",
+          borderRadius: "16px",
+          padding: "16px 22px",
+          marginBottom: "24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "14px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "10px",
+              background: "rgba(139, 92, 246, 0.15)",
+              border: "1px solid rgba(139, 92, 246, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Code2 size={20} color="#c084fc" />
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, color: "#fff", fontSize: "14px" }}>
+              Tier 3 Execution Runner Engine Active
+            </div>
+            <div style={{ fontSize: "12px", color: "#94a3b8" }}>
+              EC2-3 (172.31.3.155:5001) • Sandboxed sub-millisecond execution
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "24px", fontSize: "12px" }}>
+          <div>
+            <span style={{ color: "#64748b" }}>Quota: </span>
+            <strong style={{ color: "#fff", fontFamily: "var(--font-mono)" }}>{functions.length} / 5 slots</strong>
+          </div>
+          <div>
+            <span style={{ color: "#64748b" }}>Scheduler: </span>
+            <strong style={{ color: "#34d399" }}>APScheduler (:5002)</strong>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "#34d399", fontWeight: 700 }}>
+            <span className="pulse-live-dot" /> Runner Online
+          </div>
+        </div>
+      </div>
+
       {/* Main 2-Column Split: Function List & Code Editor */}
       <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: "20px" }}>
         {/* Left Column: Function Selector List */}

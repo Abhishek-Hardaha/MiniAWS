@@ -13,9 +13,15 @@ import {
   Plus,
   X,
   Copy,
-  AlertCircle
+  AlertCircle,
+  Server,
+  Layers,
+  Cpu,
+  ShieldCheck,
 } from "lucide-react";
 import { listWebsites, createWebsite, updateWebsite, deleteWebsite, getWebsiteSource } from "@/lib/api";
+import RadialProgressGauge from "@/components/charts/RadialProgressGauge";
+import BarMetricChart, { BarMetricItem } from "@/components/charts/BarMetricChart";
 
 const DEFAULT_SAMPLE_HTML = `<!DOCTYPE html>
 <html lang="en">
@@ -79,6 +85,8 @@ export default function WebHostingPage() {
   const [description, setDescription] = useState("");
   const [htmlContent, setHtmlContent] = useState(DEFAULT_SAMPLE_HTML);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
   const loadWebsites = () => {
     listWebsites()
@@ -89,6 +97,56 @@ export default function WebHostingPage() {
   useEffect(() => {
     loadWebsites();
   }, []);
+
+  const handleFileRead = (file: File) => {
+    if (!file.name.toLowerCase().endsWith(".html") && !file.name.toLowerCase().endsWith(".htm")) {
+      setErrorMsg("Please upload a valid HTML file (.html or .htm)");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      setHtmlContent(text);
+      setUploadedFileName(file.name);
+      setErrorMsg(null);
+
+      // Pre-fill siteName if empty
+      if (!siteName) {
+        const baseName = file.name.replace(/\.[^/.]+$/, "");
+        setSiteName(baseName.charAt(0).toUpperCase() + baseName.slice(1));
+      }
+      // Pre-fill subdomain if empty
+      if (!subdomain) {
+        const baseName = file.name.replace(/\.[^/.]+$/, "");
+        setSubdomain(baseName.toLowerCase().replace(/[^a-z0-9-]/g, "-"));
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileRead(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFileRead(e.target.files[0]);
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,6 +162,7 @@ export default function WebHostingPage() {
       setSiteName("");
       setSubdomain("");
       setDescription("");
+      setUploadedFileName(null);
       loadWebsites();
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to deploy website");
@@ -148,6 +207,33 @@ export default function WebHostingPage() {
     alert(`Copied URL to clipboard: ${fullUrl}`);
   };
 
+  const websiteBarItems: BarMetricItem[] = [
+    {
+      label: "Live Virtual Hosts",
+      value: websites.length,
+      max: 3,
+      displayValue: `${websites.length} / 3`,
+      color: "#3b82f6",
+      icon: <Globe size={15} color="#3b82f6" />,
+    },
+    {
+      label: "Custom Subdomain Routing",
+      value: websites.length,
+      max: 3,
+      displayValue: `${websites.length} Bound`,
+      color: "#06b6d4",
+      icon: <Layers size={15} color="#06b6d4" />,
+    },
+    {
+      label: "Instant Edge Reloads",
+      value: websites.length,
+      max: 3,
+      displayValue: "100% Synced",
+      color: "#10b981",
+      icon: <CheckCircle size={15} color="#10b981" />,
+    },
+  ];
+
   return (
     <div className="content-wrapper">
       {/* Header */}
@@ -162,46 +248,83 @@ export default function WebHostingPage() {
           </p>
         </div>
 
-        <button className="btn-primary" onClick={() => setModalOpen(true)}>
-          <Plus size={16} />
-          <span>Deploy New Website</span>
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <label className="btn-secondary" style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
+            <Upload size={16} />
+            <span>Upload HTML</span>
+            <input
+              type="file"
+              accept=".html,.htm"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                handleFileInputChange(e);
+                setModalOpen(true);
+              }}
+            />
+          </label>
+          <button className="btn-primary" onClick={() => { setUploadedFileName(null); setModalOpen(true); }}>
+            <Plus size={16} />
+            <span>Deploy New Website</span>
+          </button>
+        </div>
       </div>
 
-      {/* Quota Info Box */}
-      <div
-        style={{
-          background: "rgba(59, 130, 246, 0.08)",
-          border: "1px solid rgba(59, 130, 246, 0.25)",
-          borderRadius: "16px",
-          padding: "16px 24px",
-          marginBottom: "24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-          <div
-            style={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "10px",
-              background: "rgba(59, 130, 246, 0.2)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Globe size={18} color="#60a5fa" />
-          </div>
+      {/* Web Hosting Analytics Row: Radial Gauge + Host Breakdown + Data Tier Node Telemetry */}
+      <div style={{ display: "grid", gridTemplateColumns: "280px 1.4fr 1fr", gap: "20px", marginBottom: "28px" }}>
+        {/* Radial Quota Gauge */}
+        <div className="chart-panel-card" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <RadialProgressGauge
+            value={websites.length}
+            max={3}
+            color="#3b82f6"
+            label="Static Sites Quota"
+            sub={`${websites.length} of 3 active`}
+            size={130}
+            strokeWidth={11}
+          />
+        </div>
+
+        {/* Website Composition Bar Chart */}
+        <div className="chart-panel-card">
+          <BarMetricChart
+            items={websiteBarItems}
+            title="Static Hosting Status & Quota"
+            subtitle="Virtual host allocation and Nginx edge routing"
+          />
+        </div>
+
+        {/* Data Tier Nginx Node Telemetry */}
+        <div className="chart-panel-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           <div>
-            <div style={{ fontWeight: 600, color: "#fff" }}>
-              Active Websites: {websites.length} / 3 Allowed
+            <div style={{ fontSize: "14px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
+              Data Tier Node Telemetry
             </div>
             <div style={{ fontSize: "12px", color: "#94a3b8" }}>
-              Served via Nginx on EC2 Instance 2 (172.31.12.181:8080)
+              EC2 Instance 2 (172.31.12.181:8080)
             </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", margin: "16px 0" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+              <span style={{ color: "#94a3b8" }}>Web Server:</span>
+              <span style={{ color: "#fff", fontWeight: 700, fontFamily: "var(--font-mono)" }}>Nginx 1.24 VHosts</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+              <span style={{ color: "#94a3b8" }}>Remaining Quota:</span>
+              <span style={{ color: "#34d399", fontWeight: 700, fontFamily: "var(--font-mono)" }}>
+                {Math.max(0, 3 - websites.length)} sites free
+              </span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+              <span style={{ color: "#94a3b8" }}>Delivery Status:</span>
+              <span style={{ color: "#3b82f6", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                <span className="pulse-live-dot" /> Online
+              </span>
+            </div>
+          </div>
+
+          <div style={{ fontSize: "11px", color: "#64748b", borderTop: "1px solid var(--border-subtle)", paddingTop: "10px" }}>
+            Direct path: /var/www/miniaws/sites/
           </div>
         </div>
       </div>
@@ -342,6 +465,44 @@ export default function WebHostingPage() {
               </div>
             )}
 
+            {/* Drag & Drop HTML Upload Zone */}
+            <div
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              style={{
+                border: isDragging ? "2px dashed #3b82f6" : "2px dashed rgba(59, 130, 246, 0.35)",
+                background: isDragging ? "rgba(59, 130, 246, 0.12)" : "rgba(15, 23, 42, 0.6)",
+                borderRadius: "14px",
+                padding: "20px 16px",
+                textAlign: "center",
+                marginBottom: "20px",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <input
+                type="file"
+                accept=".html,.htm"
+                id="deploy-html-upload"
+                style={{ display: "none" }}
+                onChange={handleFileInputChange}
+              />
+              <label htmlFor="deploy-html-upload" style={{ cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "rgba(59, 130, 246, 0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Upload size={22} color={isDragging ? "#60a5fa" : "#3b82f6"} />
+                </div>
+                <div>
+                  <span style={{ fontWeight: 600, color: "#fff", fontSize: "14px" }}>
+                    {uploadedFileName ? `✓ Loaded: ${uploadedFileName}` : "Drag & drop an HTML file here, or click to browse"}
+                  </span>
+                  <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: "3px" }}>
+                    Select any .html or .htm file to auto-populate title, slug, and code
+                  </div>
+                </div>
+              </label>
+            </div>
+
             <form onSubmit={handleCreate}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div className="form-group">
@@ -418,6 +579,40 @@ export default function WebHostingPage() {
               <button className="icon-btn" onClick={() => setEditModalOpen(false)}>
                 <X size={18} />
               </button>
+            </div>
+
+            {/* Quick Upload / Drag & Drop in Editor Modal */}
+            <div
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              style={{
+                border: isDragging ? "2px dashed #3b82f6" : "2px dashed rgba(59, 130, 246, 0.25)",
+                background: isDragging ? "rgba(59, 130, 246, 0.1)" : "rgba(15, 23, 42, 0.4)",
+                borderRadius: "10px",
+                padding: "12px",
+                textAlign: "center",
+                marginBottom: "14px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "10px",
+              }}
+            >
+              <input
+                type="file"
+                accept=".html,.htm"
+                id="edit-html-upload"
+                style={{ display: "none" }}
+                onChange={handleFileInputChange}
+              />
+              <label htmlFor="edit-html-upload" style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#94a3b8" }}>
+                <Upload size={16} color="#60a5fa" />
+                <span>
+                  {uploadedFileName ? `Replaced with: ${uploadedFileName}` : "Drag & drop new HTML file to replace code, or click to upload"}
+                </span>
+              </label>
             </div>
 
             <div className="form-group">

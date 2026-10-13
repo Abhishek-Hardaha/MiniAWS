@@ -13,9 +13,15 @@ import {
   FileText,
   AlertCircle,
   RefreshCw,
-  X
+  X,
+  HardDrive,
+  PieChart,
+  ShieldCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { listFiles, uploadFile, deleteFile, getDashboardSummary } from "@/lib/api";
+import RadialProgressGauge from "@/components/charts/RadialProgressGauge";
+import BarMetricChart, { BarMetricItem } from "@/components/charts/BarMetricChart";
 
 export default function StoragePage() {
   const [files, setFiles] = useState<any[]>([]);
@@ -97,6 +103,49 @@ export default function StoragePage() {
     return <File size={18} color="#94a3b8" />;
   };
 
+  // Compute breakdown by file category
+  const categories = files.reduce((acc: Record<string, { bytes: number; count: number }>, f: any) => {
+    let cat = "Other";
+    if (f.mime_type?.startsWith("image/")) cat = "Images & Media";
+    else if (f.mime_type?.includes("pdf") || f.mime_type?.includes("text")) cat = "Documents (PDF/Text)";
+    else if (f.mime_type?.includes("json") || f.mime_type?.includes("python") || f.mime_type?.includes("javascript")) cat = "Code & Scripts";
+
+    if (!acc[cat]) acc[cat] = { bytes: 0, count: 0 };
+    acc[cat].bytes += f.file_size || 0;
+    acc[cat].count += 1;
+    return acc;
+  }, {});
+
+  const totalUsedBytes = quota?.storage_used_bytes || files.reduce((s, f) => s + (f.file_size || 0), 0) || 1;
+  const maxStorageBytes = quota?.storage_max_bytes || 5368709120; // 5 GB
+
+  const storageBarItems: BarMetricItem[] = [
+    {
+      label: "Documents (PDF / Text)",
+      value: categories["Documents (PDF/Text)"]?.bytes || 0,
+      max: totalUsedBytes,
+      displayValue: formatBytes(categories["Documents (PDF/Text)"]?.bytes || 0),
+      color: "#10b981",
+      icon: <FileText size={15} color="#10b981" />,
+    },
+    {
+      label: "Images & Media",
+      value: categories["Images & Media"]?.bytes || 0,
+      max: totalUsedBytes,
+      displayValue: formatBytes(categories["Images & Media"]?.bytes || 0),
+      color: "#06b6d4",
+      icon: <Image size={15} color="#06b6d4" />,
+    },
+    {
+      label: "Code & Configuration",
+      value: categories["Code & Scripts"]?.bytes || 0,
+      max: totalUsedBytes,
+      displayValue: formatBytes(categories["Code & Scripts"]?.bytes || 0),
+      color: "#8b5cf6",
+      icon: <FileCode size={15} color="#8b5cf6" />,
+    },
+  ];
+
   return (
     <div className="content-wrapper">
       {/* Page Header */}
@@ -104,10 +153,10 @@ export default function StoragePage() {
         <div>
           <h1 style={{ fontSize: "26px", fontWeight: 800, color: "#fff", display: "flex", alignItems: "center", gap: "10px" }}>
             <Database size={26} color="#14b8a6" />
-            Storage & File Hosting (S3)
+            Storage &amp; File Hosting (S3)
           </h1>
           <p style={{ color: "#94a3b8", fontSize: "14px", marginTop: "4px" }}>
-            Store, view, download and manage your files securely with guaranteed per-user quota isolation.
+            Store, view, download and manage your files securely on the EC2-2 Data Tier with 5 GB storage isolation.
           </p>
         </div>
 
@@ -123,45 +172,65 @@ export default function StoragePage() {
         </label>
       </div>
 
-      {/* Quota Banner */}
-      {quota && (
-        <div
-          style={{
-            background: "rgba(20, 184, 166, 0.08)",
-            border: "1px solid rgba(20, 184, 166, 0.25)",
-            borderRadius: "16px",
-            padding: "18px 24px",
-            marginBottom: "24px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ flex: 1, marginRight: "32px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-              <span style={{ fontWeight: 600, color: "#fff" }}>
-                Storage Quota Usage: {formatBytes(quota.storage_used_bytes)} / {formatBytes(quota.storage_max_bytes)}
-              </span>
-              <span style={{ fontWeight: 700, color: "#14b8a6" }}>
-                {quota.storage_percent}% Used
-              </span>
+      {/* Storage Analytics Row: Radial Gauge + File Breakdown + Node Health */}
+      <div style={{ display: "grid", gridTemplateColumns: "280px 1.4fr 1fr", gap: "20px", marginBottom: "28px" }}>
+        {/* Radial Storage Gauge */}
+        <div className="chart-panel-card" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <RadialProgressGauge
+            value={quota?.storage_used_bytes || 0}
+            max={maxStorageBytes}
+            color="#14b8a6"
+            label="5 GB S3 Capacity"
+            sub={`${formatBytes(quota?.storage_used_bytes || 0)} used`}
+            size={130}
+            strokeWidth={11}
+          />
+        </div>
+
+        {/* Storage Composition Bar Chart */}
+        <div className="chart-panel-card">
+          <BarMetricChart
+            items={storageBarItems}
+            title="Storage Composition by Type"
+            subtitle="Breakdown of stored files and disk consumption"
+          />
+        </div>
+
+        {/* Node Health & Stats */}
+        <div className="chart-panel-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontSize: "14px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
+              Data Tier Node Telemetry
             </div>
-            <div className="usage-bar-track" style={{ height: "8px", margin: 0 }}>
-              <div
-                className="usage-bar-fill"
-                style={{
-                  width: `${quota.storage_percent}%`,
-                  backgroundColor: "#14b8a6",
-                  boxShadow: "0 0 12px rgba(20, 184, 166, 0.6)",
-                }}
-              />
+            <div style={{ fontSize: "12px", color: "#94a3b8" }}>
+              Private IP: 172.31.12.181:9000
             </div>
           </div>
-          <div style={{ fontSize: "12px", color: "#94a3b8" }}>
-            Data Tier: <span style={{ color: "#38bdf8", fontWeight: 600 }}>EC2-2 (172.31.12.181:9000)</span>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", margin: "16px 0" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+              <span style={{ color: "#94a3b8" }}>Files Count:</span>
+              <span style={{ color: "#fff", fontWeight: 700, fontFamily: "var(--font-mono)" }}>{files.length}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+              <span style={{ color: "#94a3b8" }}>Free Capacity:</span>
+              <span style={{ color: "#34d399", fontWeight: 700, fontFamily: "var(--font-mono)" }}>
+                {formatBytes(Math.max(0, maxStorageBytes - (quota?.storage_used_bytes || 0)))}
+              </span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+              <span style={{ color: "#94a3b8" }}>Service Status:</span>
+              <span style={{ color: "#14b8a6", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                <span className="pulse-live-dot" /> Online
+              </span>
+            </div>
+          </div>
+
+          <div style={{ fontSize: "11px", color: "#64748b", borderTop: "1px solid var(--border-subtle)", paddingTop: "10px" }}>
+            Encrypted storage with checksum verification
           </div>
         </div>
-      )}
+      </div>
 
       {/* Error alert if quota exceeded */}
       {errorMsg && (
@@ -218,13 +287,17 @@ export default function StoragePage() {
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         {getFileIcon(file.mime_type)}
-                        <span style={{ fontWeight: 600, color: "#fff" }}>{file.filename}</span>
+                        <span style={{ fontWeight: 600, color: "#fff" }}>{file.original_filename}</span>
                       </div>
                     </td>
-                    <td style={{ color: "#94a3b8", fontSize: "12px" }}>{file.mime_type}</td>
-                    <td style={{ color: "#e2e8f0" }}>{formatBytes(file.file_size)}</td>
+                    <td style={{ color: "#94a3b8", fontSize: "12px" }}>
+                      {file.mime_type}
+                    </td>
+                    <td style={{ fontFamily: "var(--font-mono)", color: "#14b8a6" }}>
+                      {formatBytes(file.file_size)}
+                    </td>
                     <td style={{ color: "#64748b", fontSize: "12px" }}>
-                      {new Date(file.created_at).toLocaleDateString()} {new Date(file.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(file.created_at).toLocaleDateString()}
                     </td>
                     <td style={{ textAlign: "right" }}>
                       <div style={{ display: "inline-flex", gap: "8px" }}>
@@ -232,24 +305,24 @@ export default function StoragePage() {
                           className="icon-btn"
                           style={{ width: "32px", height: "32px" }}
                           onClick={() => handlePreview(file)}
-                          title="Preview"
+                          title="Preview File"
                         >
                           <Eye size={15} />
                         </button>
                         <a
                           href={`/api/storage/download/${file.id}`}
-                          download={file.filename}
+                          download
                           className="icon-btn"
                           style={{ width: "32px", height: "32px" }}
-                          title="Download"
+                          title="Download File"
                         >
                           <Download size={15} />
                         </a>
                         <button
                           className="icon-btn"
-                          style={{ width: "32px", height: "32px", color: "#f87171" }}
+                          style={{ width: "32px", height: "32px", color: "#ef4444" }}
                           onClick={() => handleDelete(file.id)}
-                          title="Delete"
+                          title="Delete File"
                         >
                           <Trash2 size={15} />
                         </button>
@@ -266,12 +339,12 @@ export default function StoragePage() {
       {/* Preview Modal */}
       {previewFile && (
         <div className="modal-overlay">
-          <div className="modal-content">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div className="modal-content" style={{ maxWidth: "700px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 {getFileIcon(previewFile.mime_type)}
                 <h3 style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>
-                  {previewFile.filename}
+                  {previewFile.original_filename}
                 </h3>
               </div>
               <button className="icon-btn" onClick={() => setPreviewFile(null)}>
@@ -279,33 +352,21 @@ export default function StoragePage() {
               </button>
             </div>
 
-            {previewContent === "image" ? (
-              <div style={{ textAlign: "center", padding: "16px", background: "#050811", borderRadius: "12px" }}>
+            <div style={{ maxHeight: "450px", overflowY: "auto", background: "#050811", borderRadius: "10px", padding: "16px" }}>
+              {previewContent === "image" ? (
                 <img
-                  src={`/api/storage/download/${previewFile.id}?preview=true`}
-                  alt={previewFile.filename}
-                  style={{ maxWidth: "100%", maxHeight: "400px", borderRadius: "8px" }}
+                  src={`/api/storage/download/${previewFile.id}`}
+                  alt={previewFile.original_filename}
+                  style={{ maxWidth: "100%", maxHeight: "400px", display: "block", margin: "0 auto", borderRadius: "6px" }}
                 />
-              </div>
-            ) : (
-              <pre
-                style={{
-                  background: "#050811",
-                  padding: "16px",
-                  borderRadius: "12px",
-                  fontSize: "12px",
-                  color: "#38bdf8",
-                  maxHeight: "360px",
-                  overflowY: "auto",
-                  fontFamily: "var(--font-mono)",
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {previewContent}
-              </pre>
-            )}
+              ) : (
+                <pre style={{ color: "#38bdf8", fontFamily: "var(--font-mono)", fontSize: "12px", whiteSpace: "pre-wrap" }}>
+                  {previewContent}
+                </pre>
+              )}
+            </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
               <button className="btn-secondary" onClick={() => setPreviewFile(null)}>
                 Close Preview
               </button>
