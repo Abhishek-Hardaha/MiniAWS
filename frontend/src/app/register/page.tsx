@@ -293,7 +293,7 @@ export default function RegisterPage() {
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Alex Mercer"
+                  placeholder="Full Name"
                   className="auth-interactive-input"
                 />
               </div>
