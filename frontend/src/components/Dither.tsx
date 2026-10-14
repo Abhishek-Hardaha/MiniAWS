@@ -398,13 +398,12 @@ const Dither: React.FC<DitherProps> = ({
       window.addEventListener('resize', resize2d);
 
       const draw2d = () => {
-        t += 0.03;
+        t += 0.012;
         const w = canvas.width;
         const h = canvas.height;
-        ctx.fillStyle = '#060b18';
-        ctx.fillRect(0, 0, w, h);
+        ctx.clearRect(0, 0, w, h);
 
-        const step = 22;
+        const step = 20;
         const cols = Math.ceil(w / step);
         const rows = Math.ceil(h / step);
 
@@ -412,14 +411,14 @@ const Dither: React.FC<DitherProps> = ({
           for (let j = 0; j < rows; j++) {
             const x = i * step;
             const y = j * step;
-            const wave = Math.sin(x * 0.005 + t) * Math.cos(y * 0.005 + t * 0.8) +
-                         Math.sin((x + y) * 0.003 + t * 0.5);
+            const wave = Math.sin(x * 0.004 + t) * Math.cos(y * 0.004 + t * 0.7) +
+                         Math.sin((x + y) * 0.0025 + t * 0.4);
             const norm = (wave + 2) / 4;
 
-            if (norm > 0.42) {
-              const alpha = Math.min(1, (norm - 0.42) * 2.2);
-              ctx.fillStyle = norm > 0.7 ? `rgba(56, 189, 248, ${alpha})` : `rgba(29, 78, 216, ${alpha * 0.8})`;
-              const dotSize = norm > 0.7 ? 3 : 2;
+            if (norm > 0.45) {
+              const alpha = Math.min(0.65, (norm - 0.45) * 1.5);
+              ctx.fillStyle = norm > 0.72 ? `rgba(96, 165, 250, ${alpha * 0.5})` : `rgba(37, 99, 235, ${alpha * 0.35})`;
+              const dotSize = norm > 0.72 ? 2 : 1.5;
               ctx.fillRect(x, y, dotSize, dotSize);
             }
           }

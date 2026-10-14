@@ -100,23 +100,25 @@ export default function RegisterPage() {
           height: "100%",
           pointerEvents: "none",
           zIndex: 1,
-          opacity: 0.95,
+          opacity: 0.38,
+          maskImage: "radial-gradient(ellipse 90% 85% at 50% 50%, black 45%, rgba(0,0,0,0.35) 80%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 90% 85% at 50% 50%, black 45%, rgba(0,0,0,0.35) 80%, transparent 100%)",
         }}
       >
         <Dither
           ditherMode="bayer"
-          palette={['#040714', '#0c1a36', '#173b75', '#0284c7', '#38bdf8']}
-          pixelSize={3}
-          scale={1.2}
-          waveSpeed={0.035}
-          waveFrequency={2.5}
-          waveAmplitude={0.35}
-          contrast={1.25}
-          brightness={0.02}
+          palette={['#02050e', '#071124', '#0e2042', '#183466', '#254d91']}
+          pixelSize={2}
+          scale={1.5}
+          waveSpeed={0.018}
+          waveFrequency={1.8}
+          waveAmplitude={0.22}
+          contrast={1.1}
+          brightness={-0.03}
           mouseEffect="ripple"
-          mouseRadius={0.4}
-          mouseStrength={1.5}
-          trail={0.3}
+          mouseRadius={0.32}
+          mouseStrength={0.9}
+          trail={0.25}
           clickRipple={true}
           intro={false}
         />
@@ -133,13 +135,15 @@ export default function RegisterPage() {
               gap: "8px",
               padding: "6px 14px",
               borderRadius: "9999px",
-              background: "rgba(168, 85, 247, 0.1)",
+              background: "rgba(15, 23, 42, 0.7)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
               border: "1px solid rgba(168, 85, 247, 0.3)",
               color: "#c084fc",
               fontSize: "12px",
               fontWeight: 600,
               marginBottom: "20px",
-              boxShadow: "0 0 20px rgba(168, 85, 247, 0.15)",
+              boxShadow: "0 4px 16px rgba(0, 0, 0, 0.3)",
             }}
           >
             <Sparkles size={14} className="spin-slow" />
@@ -154,34 +158,37 @@ export default function RegisterPage() {
               lineHeight: 1.15,
               letterSpacing: "-0.03em",
               marginBottom: "16px",
+              textShadow: "0 2px 24px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.9)",
             }}
           >
             Deploy Faster with <br />
             <span
               style={{
-                background: "linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #38bdf8 100%)",
+                background: "linear-gradient(135deg, #c084fc 0%, #f472b6 50%, #60a5fa 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
+                filter: "drop-shadow(0 2px 10px rgba(192, 132, 252, 0.25))",
               }}
             >
               Isolated Sandboxes.
             </span>
           </h1>
 
-          <p style={{ color: "#94a3b8", fontSize: "15px", lineHeight: 1.6, marginBottom: "26px", maxWidth: "480px" }}>
+          <p style={{ color: "#e2e8f0", fontSize: "15px", lineHeight: 1.6, marginBottom: "26px", maxWidth: "480px", textShadow: "0 2px 12px rgba(0, 0, 0, 0.95)" }}>
             Every account receives dedicated namespace quotas on our 3-tier AWS EC2 cloud cluster with zero setup required.
           </p>
 
           {/* Interactive Included Cloud Quotas Card */}
           <div
             style={{
-              background: "rgba(10, 16, 30, 0.7)",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
+              background: "rgba(10, 16, 32, 0.8)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
               borderRadius: "20px",
               padding: "20px",
-              backdropFilter: "blur(16px)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
               marginBottom: "26px",
-              boxShadow: "0 12px 36px rgba(0, 0, 0, 0.4)",
+              boxShadow: "0 16px 40px -8px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04)",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
@@ -238,14 +245,46 @@ export default function RegisterPage() {
           </div>
 
           {/* Feature Badges List */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#94a3b8" }}>
-              <CheckCircle2 size={14} color="#34d399" />
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "9px",
+                fontSize: "12px",
+                color: "#e2e8f0",
+                background: "rgba(11, 18, 34, 0.7)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                borderRadius: "10px",
+                padding: "10px 14px",
+                boxShadow: "0 4px 16px rgba(0, 0, 0, 0.35)",
+                fontWeight: 500,
+              }}
+            >
+              <CheckCircle2 size={15} color="#34d399" style={{ flexShrink: 0 }} />
               <span>Full API Gateway access with custom route mappings</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#94a3b8" }}>
-              <CheckCircle2 size={14} color="#34d399" />
-              <span>Dedicated static URL: <code style={{ color: "#38bdf8" }}>/sites/{previewUsername}/</code></span>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "9px",
+                fontSize: "12px",
+                color: "#e2e8f0",
+                background: "rgba(11, 18, 34, 0.7)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                borderRadius: "10px",
+                padding: "10px 14px",
+                boxShadow: "0 4px 16px rgba(0, 0, 0, 0.35)",
+                fontWeight: 500,
+              }}
+            >
+              <CheckCircle2 size={15} color="#38bdf8" style={{ flexShrink: 0 }} />
+              <span>Dedicated static URL: <code style={{ color: "#38bdf8", background: "rgba(56, 189, 248, 0.1)", padding: "2px 6px", borderRadius: "4px" }}>/sites/&#123;previewUsername&#125;/</code></span>
             </div>
           </div>
         </div>
