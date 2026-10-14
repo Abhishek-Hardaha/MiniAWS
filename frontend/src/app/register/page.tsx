@@ -23,6 +23,7 @@ import {
   Cpu
 } from "lucide-react";
 import { registerUser } from "@/lib/api";
+import BorderGlow from "@/components/BorderGlow";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -217,8 +218,19 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Right Side: The Frosted Glassmorphism Registration Console Card */}
-        <div className="auth-card">
+        {/* Right Side: The Frosted Glassmorphism Registration Console Card with Interactive Border Glow */}
+        <BorderGlow
+          className="auth-card"
+          edgeSensitivity={30}
+          glowColor="270 90 75"
+          backgroundColor="rgba(11, 18, 34, 0.88)"
+          borderRadius={28}
+          glowRadius={36}
+          glowIntensity={1.2}
+          coneSpread={28}
+          animated={true}
+          colors={['#c084fc', '#ec4899', '#38bdf8']}
+        >
           {/* Header */}
           <div style={{ textAlign: "center", marginBottom: "24px" }}>
             <div
@@ -400,7 +412,7 @@ export default function RegisterPage() {
             <ShieldCheck size={13} color="#34d399" />
             <span>Multi-Tenant VPC Network Isolation &amp; Zero Setup</span>
           </div>
-        </div>
+        </BorderGlow>
       </div>
     </div>
   );

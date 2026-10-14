@@ -20,6 +20,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { loginUser } from "@/lib/api";
+import BorderGlow from "@/components/BorderGlow";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -226,8 +227,19 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right Side: The Frosted Glassmorphism Login Console Card */}
-        <div className="auth-card">
+        {/* Right Side: The Frosted Glassmorphism Login Console Card with Interactive Border Glow */}
+        <BorderGlow
+          className="auth-card"
+          edgeSensitivity={30}
+          glowColor="195 90 70"
+          backgroundColor="rgba(11, 18, 34, 0.88)"
+          borderRadius={28}
+          glowRadius={36}
+          glowIntensity={1.2}
+          coneSpread={28}
+          animated={true}
+          colors={['#38bdf8', '#818cf8', '#c084fc']}
+        >
           {/* Header */}
           <div style={{ textAlign: "center", marginBottom: "26px" }}>
             <div
@@ -359,7 +371,7 @@ export default function LoginPage() {
             <Lock size={12} color="#64748b" />
             <span>256-bit PBKDF2 Encryption &amp; Multi-Tenant Isolation</span>
           </div>
-        </div>
+        </BorderGlow>
       </div>
     </div>
   );
