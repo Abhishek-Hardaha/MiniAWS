@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Bell, ChevronDown, Check, UserPlus, LogOut, ShieldAlert } from "lucide-react";
-import { getStoredUserId, setStoredUserId, getStoredUser, setStoredUser, listUsers, logoutUser } from "@/lib/api";
+import { Search, Bell, ChevronDown, UserPlus, LogOut, ShieldAlert } from "lucide-react";
+import { getStoredUser, logoutUser } from "@/lib/api";
 
 export default function Topbar() {
   const [currentUser, setCurrentUser] = useState<{ id: string; full_name: string; email: string }>({
@@ -11,7 +11,6 @@ export default function Topbar() {
     full_name: "Abhishek",
     email: "abhishek.hardaha.0111@gmail.com",
   });
-  const [usersList, setUsersList] = useState<any[]>([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
 
@@ -20,27 +19,7 @@ export default function Topbar() {
     if (stored) {
       setCurrentUser(stored);
     }
-    const activeId = getStoredUserId();
-    listUsers()
-      .then((users) => {
-        if (users && users.length > 0) {
-          setUsersList(users);
-          if (!stored) {
-            const active = activeId ? users.find((u) => u.id === activeId) : users[0];
-            if (active) setCurrentUser(active);
-          }
-        }
-      })
-      .catch(() => {});
   }, []);
-
-  const handleSwitchUser = (user: any) => {
-    setStoredUserId(user.id);
-    setStoredUser(user);
-    setCurrentUser(user);
-    setDropdownOpen(false);
-    window.location.reload();
-  };
 
   return (
     <header className="topbar">
@@ -161,36 +140,39 @@ export default function Topbar() {
                 zIndex: 60,
               }}
             >
-              <div style={{ fontSize: "11px", color: "#64748b", textTransform: "uppercase", padding: "6px 8px", fontWeight: 700 }}>
-                Switch Account (Multi-Tenant)
+              <div style={{ fontSize: "11px", color: "#64748b", textTransform: "uppercase", padding: "4px 8px 8px", fontWeight: 700, letterSpacing: "0.05em" }}>
+                Current Tenant Account
               </div>
-              {usersList.map((u) => {
-                const isSelected = u.id === currentUser.id;
-                return (
-                  <div
-                    key={u.id}
-                    onClick={() => handleSwitchUser(u)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "8px 10px",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      backgroundColor: isSelected ? "rgba(59, 130, 246, 0.15)" : "transparent",
-                      color: isSelected ? "#60a5fa" : "#e2e8f0",
-                      fontSize: "13px",
-                      fontWeight: isSelected ? 600 : 400,
-                    }}
-                  >
-                    <div>
-                      <div>{u.full_name}</div>
-                      <div style={{ fontSize: "11px", color: "#64748b" }}>{u.email}</div>
-                    </div>
-                    {isSelected && <Check size={16} color="#60a5fa" />}
+
+              {/* Current User Profile Card */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "10px",
+                  borderRadius: "10px",
+                  backgroundColor: "rgba(59, 130, 246, 0.12)",
+                  border: "1px solid rgba(59, 130, 246, 0.25)",
+                  marginBottom: "6px",
+                }}
+              >
+                <div className="avatar-circle" style={{ width: "34px", height: "34px", fontSize: "13px", flexShrink: 0 }}>
+                  {(currentUser?.full_name || "Cloud User").charAt(0).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ color: "#fff", fontWeight: 600, fontSize: "13px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {currentUser?.full_name || "Cloud User"}
                   </div>
-                );
-              })}
+                  <div style={{ fontSize: "11px", color: "#94a3b8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {currentUser?.email}
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", color: "#34d399", fontWeight: 600 }}>
+                  <span className="pulse-live-dot" style={{ width: "6px", height: "6px" }} />
+                  <span>Active</span>
+                </div>
+              </div>
 
               <div style={{ borderTop: "1px solid rgba(255, 255, 255, 0.08)", marginTop: "8px", paddingTop: "8px" }}>
                 <a

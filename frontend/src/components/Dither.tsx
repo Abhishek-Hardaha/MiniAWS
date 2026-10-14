@@ -380,7 +380,59 @@ const Dither: React.FC<DitherProps> = ({
       depth: false,
       stencil: false,
     });
-    if (!container || !canvas || !gl) return undefined;
+    if (!container || !canvas) return undefined;
+
+    // 2D Canvas Fallback for environments where WebGL2 is disabled or unavailable (e.g. Windows RDP sessions, VMs)
+    if (!gl) {
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return undefined;
+      let raf2d = 0;
+      let t = 0;
+      const resize2d = () => {
+        const w = container.clientWidth || (typeof window !== 'undefined' ? window.innerWidth : 1920);
+        const h = container.clientHeight || (typeof window !== 'undefined' ? window.innerHeight : 1080);
+        canvas.width = w;
+        canvas.height = h;
+      };
+      resize2d();
+      window.addEventListener('resize', resize2d);
+
+      const draw2d = () => {
+        t += 0.03;
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.fillStyle = '#060b18';
+        ctx.fillRect(0, 0, w, h);
+
+        const step = 22;
+        const cols = Math.ceil(w / step);
+        const rows = Math.ceil(h / step);
+
+        for (let i = 0; i < cols; i++) {
+          for (let j = 0; j < rows; j++) {
+            const x = i * step;
+            const y = j * step;
+            const wave = Math.sin(x * 0.005 + t) * Math.cos(y * 0.005 + t * 0.8) +
+                         Math.sin((x + y) * 0.003 + t * 0.5);
+            const norm = (wave + 2) / 4;
+
+            if (norm > 0.42) {
+              const alpha = Math.min(1, (norm - 0.42) * 2.2);
+              ctx.fillStyle = norm > 0.7 ? `rgba(56, 189, 248, ${alpha})` : `rgba(29, 78, 216, ${alpha * 0.8})`;
+              const dotSize = norm > 0.7 ? 3 : 2;
+              ctx.fillRect(x, y, dotSize, dotSize);
+            }
+          }
+        }
+        raf2d = requestAnimationFrame(draw2d);
+      };
+      raf2d = requestAnimationFrame(draw2d);
+
+      return () => {
+        cancelAnimationFrame(raf2d);
+        window.removeEventListener('resize', resize2d);
+      };
+    }
 
     const wave = link(gl, WAVE_FRAGMENT);
     const dither = link(gl, DITHER_FRAGMENT);
@@ -402,21 +454,41 @@ const Dither: React.FC<DitherProps> = ({
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     const framebuffer = gl.createFramebuffer();
 
-    const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    const probe = typeof document !== 'undefined' ? document.createElement('canvas').getContext('2d', { willReadFrequently: true }) : null;
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     const cache = new Map<string, [number, number, number]>();
 
     const toColor = (value: string | number[] | [number, number, number]): [number, number, number] => {
       if (Array.isArray(value)) return [0, 1, 2].map((i) => clamp(Number(value[i]) || 0, 0, 1)) as [number, number, number];
-      const key = String(value);
+      const key = String(value).trim();
       if (cache.has(key)) return cache.get(key)!;
-      let rgb: [number, number, number] = [0, 0, 0];
+
+      if (key.startsWith('#')) {
+        const hex = key.replace('#', '');
+        let r = 0, g = 0, b = 0;
+        if (hex.length === 3) {
+          r = parseInt(hex[0] + hex[0], 16) / 255;
+          g = parseInt(hex[1] + hex[1], 16) / 255;
+          b = parseInt(hex[2] + hex[2], 16) / 255;
+        } else if (hex.length >= 6) {
+          r = parseInt(hex.slice(0, 2), 16) / 255;
+          g = parseInt(hex.slice(2, 4), 16) / 255;
+          b = parseInt(hex.slice(4, 6), 16) / 255;
+        }
+        const rgb: [number, number, number] = [toLinear(r), toLinear(g), toLinear(b)];
+        cache.set(key, rgb);
+        return rgb;
+      }
+
+      let rgb: [number, number, number] = [0.2, 0.6, 0.9];
       if (probe) {
-        probe.clearRect(0, 0, 1, 1);
-        probe.fillStyle = '#000000';
-        probe.fillStyle = key;
-        const data = probe.getImageData(0, 0, 1, 1).data;
-        rgb = [toLinear(data[0] / 255), toLinear(data[1] / 255), toLinear(data[2] / 255)];
+        try {
+          probe.clearRect(0, 0, 1, 1);
+          probe.fillStyle = '#000000';
+          probe.fillStyle = key;
+          const data = probe.getImageData(0, 0, 1, 1).data;
+          rgb = [toLinear(data[0] / 255), toLinear(data[1] / 255), toLinear(data[2] / 255)];
+        } catch {}
       }
       cache.set(key, rgb);
       return rgb;

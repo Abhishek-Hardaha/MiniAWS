@@ -223,35 +223,13 @@ export default function StoragePage() {
     if (typeof fileOrMime === "object" && fileOrMime !== null) {
       mime = fileOrMime.mime_type || "";
       filename = fileOrMime.original_filename || "";
-      isFolder = !!fileOrMime.isFolder || mime === "folder";
     } else {
       mime = fileOrMime || "";
       filename = maybeFilename || "";
-      isFolder = mime === "folder";
     }
 
     const ext = filename.split(".").pop()?.toLowerCase() || "";
 
-    if (isFolder) {
-      return (
-        <div
-          style={{
-            width: "36px",
-            height: "36px",
-            borderRadius: "10px",
-            background: "#0284c7",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#ffffff",
-            boxShadow: "0 2px 10px rgba(2, 132, 199, 0.4)",
-            flexShrink: 0,
-          }}
-        >
-          <Folder size={18} fill="#ffffff" />
-        </div>
-      );
-    }
     if (mime.startsWith("image/") || ["jpg", "jpeg", "png", "webp", "gif", "svg"].includes(ext)) {
       return (
         <div
@@ -391,75 +369,8 @@ export default function StoragePage() {
     );
   };
 
-  // Demo items matching Image 2 for initial state
-  const DEMO_ITEMS = [
-    {
-      id: "demo-folder-1",
-      isFolder: true,
-      original_filename: "Project Files",
-      itemCount: 12,
-      file_size: null,
-      created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-      displayTime: "2 hours ago",
-      mime_type: "folder",
-    },
-    {
-      id: "demo-folder-2",
-      isFolder: true,
-      original_filename: "Assignments",
-      itemCount: 8,
-      file_size: null,
-      created_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-      displayTime: "1 day ago",
-      mime_type: "folder",
-    },
-    {
-      id: "demo-file-1",
-      isFolder: false,
-      original_filename: "campus.jpg",
-      file_size: 2516582,
-      displaySize: "2.4 MB",
-      created_at: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
-      displayTime: "3 days ago",
-      mime_type: "image/jpeg",
-    },
-    {
-      id: "demo-file-2",
-      isFolder: false,
-      original_filename: "report.pdf",
-      file_size: 1258291,
-      displaySize: "1.2 MB",
-      created_at: new Date(Date.now() - 4 * 24 * 3600 * 1000).toISOString(),
-      displayTime: "4 days ago",
-      mime_type: "application/pdf",
-    },
-    {
-      id: "demo-file-3",
-      isFolder: false,
-      original_filename: "data.csv",
-      file_size: 880640,
-      displaySize: "860 KB",
-      created_at: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(),
-      displayTime: "5 days ago",
-      mime_type: "text/csv",
-    },
-    {
-      id: "demo-file-4",
-      isFolder: false,
-      original_filename: "script.py",
-      file_size: 4198,
-      displaySize: "4.1 KB",
-      created_at: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString(),
-      displayTime: "1 week ago",
-      mime_type: "text/x-python",
-    },
-  ];
-
-  // Combined files list (real uploaded files displayed first, demo items following if list is fresh)
-  const combinedFiles = files.length > 0 ? files : DEMO_ITEMS;
-
   // Filter files by tab
-  const filteredFiles = combinedFiles.filter((f) => {
+  const filteredFiles = files.filter((f) => {
     const ext = f.original_filename?.split(".").pop()?.toLowerCase() || "";
     const mime = f.mime_type || "";
 
@@ -490,11 +401,10 @@ export default function StoragePage() {
     return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
   });
 
-  const totalUsedBytes = quota?.storage_used_bytes || (files.length > 0 ? files.reduce((s, f) => s + (f.file_size || 0), 0) : 671088640); // 640 MB default
+  const totalUsedBytes = quota?.storage_used_bytes ?? files.reduce((s, f) => s + (f.file_size || 0), 0);
   const maxStorageBytes = quota?.storage_max_bytes || 5368709120; // 5 GB default
-  const usedPercent = Math.min(100, Math.round((totalUsedBytes / maxStorageBytes) * 100)) || 12;
-  const totalFilesCount = files.length > 0 ? files.length : 24;
-  const totalFoldersCount = 6;
+  const usedPercent = maxStorageBytes > 0 ? Math.min(100, Math.round((totalUsedBytes / maxStorageBytes) * 100)) : 0;
+  const totalFilesCount = files.length;
 
   return (
     <div className="content-wrapper" style={{ paddingBottom: "48px" }}>
@@ -594,7 +504,7 @@ export default function StoragePage() {
             </span>
             <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
               <span style={{ fontSize: "15px", fontWeight: 700, color: "#ffffff" }}>
-                {files.length > 0 ? formatBytes(totalUsedBytes) : "640 MB"} <span style={{ color: "#64748b", fontWeight: 500 }}>/ 5 GB</span>
+                {formatBytes(totalUsedBytes)} <span style={{ color: "#64748b", fontWeight: 500 }}>/ {formatBytes(maxStorageBytes)}</span>
               </span>
               <span style={{ fontSize: "14px", fontWeight: 700, color: "#94a3b8" }}>
                 {usedPercent}%
@@ -602,7 +512,7 @@ export default function StoragePage() {
             </div>
           </div>
 
-          {/* Glowing Gradient Progress Bar (Image 2) */}
+          {/* Glowing Gradient Progress Bar */}
           <div
             style={{
               width: "100%",
@@ -615,7 +525,7 @@ export default function StoragePage() {
           >
             <div
               style={{
-                width: `${Math.max(2, usedPercent)}%`,
+                width: `${Math.max(files.length > 0 ? 2 : 0, usedPercent)}%`,
                 height: "100%",
                 background: "linear-gradient(90deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%)",
                 borderRadius: "9999px",
@@ -626,7 +536,7 @@ export default function StoragePage() {
           </div>
         </div>
 
-        {/* Card 2: Total Files (Image 2) */}
+        {/* Card 2: Total Files */}
         <div
           style={{
             background: "#0b1222",
@@ -665,7 +575,7 @@ export default function StoragePage() {
           </div>
         </div>
 
-        {/* Card 3: Folders (Image 2) */}
+        {/* Card 3: Storage Bucket Status */}
         <div
           style={{
             background: "#0b1222",
@@ -692,14 +602,14 @@ export default function StoragePage() {
               flexShrink: 0,
             }}
           >
-            <Folder size={22} />
+            <ShieldCheck size={22} />
           </div>
           <div>
-            <div style={{ fontSize: "24px", fontWeight: 800, color: "#ffffff", lineHeight: 1.2 }}>
-              {totalFoldersCount}
+            <div style={{ fontSize: "16px", fontWeight: 700, color: "#ffffff", lineHeight: 1.2 }}>
+              Active &amp; Encrypted
             </div>
             <div style={{ fontSize: "12px", color: "#94a3b8", fontWeight: 500, marginTop: "2px" }}>
-              Folders
+              Private Multi-Tenant S3
             </div>
           </div>
         </div>
@@ -999,7 +909,7 @@ export default function StoragePage() {
                           </button>
                         </td>
 
-                        {/* File Name & Icon (Image 2 Match) */}
+                        {/* File Name & Icon */}
                         <td style={{ padding: "14px 14px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                             {renderFileTypeBadge(file)}
@@ -1007,18 +917,13 @@ export default function StoragePage() {
                               <div style={{ fontSize: "13.5px", fontWeight: 600, color: "#ffffff", letterSpacing: "-0.01em" }}>
                                 {file.original_filename}
                               </div>
-                              {file.isFolder && (
-                                <div style={{ fontSize: "11px", color: "#64748b", marginTop: "2px" }}>
-                                  {file.itemCount} files
-                                </div>
-                              )}
                             </div>
                           </div>
                         </td>
 
                         {/* Size */}
                         <td style={{ padding: "14px 14px", fontSize: "13px", color: "#94a3b8" }}>
-                          {file.isFolder ? "—" : (file.displaySize || formatBytes(file.file_size))}
+                          {formatBytes(file.file_size)}
                         </td>
 
                         {/* Modified Time */}

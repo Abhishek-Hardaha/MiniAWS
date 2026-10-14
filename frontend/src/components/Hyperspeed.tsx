@@ -1022,14 +1022,19 @@ const Hyperspeed: React.FC<HyperspeedProps> = ({
       setHeld(true);
     };
     const onUp = () => setHeld(false);
+    const onEnter = () => {
+      setHeld(true); // Accelerate on hover!
+    };
     const onMove = (event: PointerEvent) => {
       const rect = container.getBoundingClientRect();
       state.pointerX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       state.pointerY = ((event.clientY - rect.top) / rect.height) * 2 - 1;
+      setHeld(true); // Accelerate on hover!
     };
     const onLeave = () => {
       state.pointerX = 0;
       state.pointerY = 0;
+      setHeld(false); // Return to normal speed when leaving
     };
     const onMenu = (event: MouseEvent) => {
       if (settingsRef.current.interactive) event.preventDefault();
@@ -1042,6 +1047,7 @@ const Hyperspeed: React.FC<HyperspeedProps> = ({
       if (state.visible) wake();
     });
     visibility.observe(container);
+    container.addEventListener('pointerenter', onEnter);
     container.addEventListener('pointerdown', onDown);
     container.addEventListener('pointermove', onMove);
     container.addEventListener('pointerleave', onLeave);
@@ -1056,6 +1062,7 @@ const Hyperspeed: React.FC<HyperspeedProps> = ({
       cancelAnimationFrame(raf);
       resizeObserver.disconnect();
       visibility.disconnect();
+      container.removeEventListener('pointerenter', onEnter);
       container.removeEventListener('pointerdown', onDown);
       container.removeEventListener('pointermove', onMove);
       container.removeEventListener('pointerleave', onLeave);
