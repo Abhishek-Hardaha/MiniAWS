@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { loginUser } from "@/lib/api";
 import BorderGlow from "@/components/BorderGlow";
+import Dither from "@/components/Dither";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -54,6 +55,41 @@ export default function LoginPage() {
       <div className="auth-ambient-orb-1" />
       <div className="auth-ambient-orb-2" />
       <div className="auth-ambient-grid" />
+
+      {/* Subtle & Elegant Interactive Dither Background */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 1,
+          opacity: 0.28,
+          maskImage: "radial-gradient(ellipse 85% 80% at 50% 50%, black 25%, transparent 90%)",
+          WebkitMaskImage: "radial-gradient(ellipse 85% 80% at 50% 50%, black 25%, transparent 90%)",
+        }}
+      >
+        <Dither
+          waveColor="#38bdf8"
+          backgroundColor="transparent"
+          ditherMode="bayer"
+          colorNum={4}
+          pixelSize={2}
+          scale={1.2}
+          waveSpeed={0.025}
+          waveFrequency={2.5}
+          waveAmplitude={0.25}
+          brightness={-0.08}
+          contrast={1.05}
+          mouseEffect="ripple"
+          mouseRadius={0.4}
+          mouseStrength={0.8}
+          trail={0.35}
+          clickRipple={true}
+          intro={true}
+        />
+      </div>
 
       <div className="auth-glass-container">
         {/* Left Side: Modern Interactive Cloud Topology Hero Showcase */}
