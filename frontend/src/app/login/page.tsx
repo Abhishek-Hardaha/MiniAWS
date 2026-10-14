@@ -22,6 +22,7 @@ import {
 import { loginUser } from "@/lib/api";
 import BorderGlow from "@/components/BorderGlow";
 import Dither from "@/components/Dither";
+import ScrambledText from "@/components/ScrambledText";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -299,30 +300,24 @@ export default function LoginPage() {
           colors={['#38bdf8', '#818cf8', '#c084fc']}
           fillOpacity={0}
         >
-          {/* Header */}
-          <div style={{ textAlign: "center", marginBottom: "26px" }}>
-            <div
+          {/* Header: Pure Scrambled Brand Title */}
+          <div style={{ textAlign: "center", marginBottom: "28px", marginTop: "4px" }}>
+            <ScrambledText
+              radius={80}
+              duration={1.2}
+              speed={0.5}
+              scrambleChars=".:"
               style={{
-                width: "58px",
-                height: "58px",
-                borderRadius: "18px",
-                background: "linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(168, 85, 247, 0.3))",
-                border: "1px solid rgba(56, 189, 248, 0.5)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto 16px",
-                boxShadow: "0 0 24px rgba(56, 189, 248, 0.35)",
+                fontSize: "30px",
+                fontWeight: 800,
+                color: "#ffffff",
+                letterSpacing: "-0.025em",
+                cursor: "default",
+                userSelect: "none",
               }}
             >
-              <Cloud size={30} color="#38bdf8" />
-            </div>
-            <h2 style={{ fontSize: "24px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
-              Sign in to StackSync
-            </h2>
-            <p style={{ color: "#94a3b8", fontSize: "13px", marginTop: "4px" }}>
-              Enter your tenant credentials to access the cloud console
-            </p>
+              StackSync
+            </ScrambledText>
           </div>
 
           {/* Error Alert */}
