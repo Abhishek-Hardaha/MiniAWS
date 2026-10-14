@@ -90,57 +90,71 @@ export default function LoginPage() {
       <div className="auth-glass-container">
         {/* Left Side: Modern Interactive Cloud Topology Hero Showcase */}
         <div className="auth-hero-pane" style={{ paddingRight: "10px" }}>
-          {/* Cloud Badge */}
+          {/* Top Hero Translucent Glass Box */}
           <div
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "6px 14px",
-              borderRadius: "9999px",
-              background: "rgba(15, 23, 42, 0.7)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              border: "1px solid rgba(56, 189, 248, 0.25)",
-              color: "#38bdf8",
-              fontSize: "12px",
-              fontWeight: 600,
+              background: "rgba(10, 16, 32, 0.72)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              borderRadius: "22px",
+              padding: "24px 26px",
               marginBottom: "20px",
-              boxShadow: "0 4px 16px rgba(0, 0, 0, 0.3)",
+              boxShadow: "0 16px 40px -8px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.03)",
             }}
           >
-            <Sparkles size={14} className="spin-slow" />
-            <span>StackSync Multi-Cloud Fabric • eu-central-1</span>
-          </div>
-
-          <h1
-            style={{
-              fontSize: "36px",
-              fontWeight: 800,
-              lineHeight: 1.15,
-              letterSpacing: "-0.03em",
-              marginBottom: "16px",
-            }}
-          >
-            <span style={{ color: "#ffffff", textShadow: "0 2px 24px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.9)" }}>
-              Next-Gen Multi-Tier
-            </span>
-            <br />
-            <span
+            {/* Cloud Badge */}
+            <div
               style={{
-                background: "linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                display: "inline-block",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "6px 14px",
+                borderRadius: "9999px",
+                background: "rgba(15, 23, 42, 0.8)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                border: "1px solid rgba(56, 189, 248, 0.25)",
+                color: "#38bdf8",
+                fontSize: "12px",
+                fontWeight: 600,
+                marginBottom: "16px",
+                boxShadow: "0 4px 16px rgba(0, 0, 0, 0.3)",
               }}
             >
-              Cloud Infrastructure.
-            </span>
-          </h1>
+              <Sparkles size={14} className="spin-slow" />
+              <span>StackSync Multi-Cloud Fabric • eu-central-1</span>
+            </div>
 
-          <p style={{ color: "#e2e8f0", fontSize: "15px", lineHeight: 1.6, marginBottom: "28px", maxWidth: "480px", textShadow: "0 2px 12px rgba(0, 0, 0, 0.95)" }}>
-            Serverless functions with sub-millisecond execution, instant static hosting with custom domains, and governed AWS EC2 clusters.
-          </p>
+            <h1
+              style={{
+                fontSize: "34px",
+                fontWeight: 800,
+                lineHeight: 1.15,
+                letterSpacing: "-0.03em",
+                marginBottom: "14px",
+              }}
+            >
+              <span style={{ color: "#ffffff", textShadow: "0 2px 20px rgba(0, 0, 0, 0.9)" }}>
+                Next-Gen Multi-Tier
+              </span>
+              <br />
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  display: "inline-block",
+                }}
+              >
+                Cloud Infrastructure.
+              </span>
+            </h1>
+
+            <p style={{ color: "#cbd5e1", fontSize: "14.5px", lineHeight: 1.6, margin: 0, maxWidth: "480px" }}>
+              Serverless functions with sub-millisecond execution, instant static hosting with custom domains, and governed AWS EC2 clusters.
+            </p>
+          </div>
 
           {/* Interactive Live 3-Tier Multi-EC2 Topology Card */}
           <div
