@@ -295,7 +295,7 @@ export default function LoginPage() {
           glowRadius={36}
           glowIntensity={1.2}
           coneSpread={28}
-          animated={true}
+          animated={false}
           colors={['#38bdf8', '#818cf8', '#c084fc']}
           fillOpacity={0}
         >

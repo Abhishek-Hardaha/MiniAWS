@@ -217,6 +217,7 @@ const BorderGlow: React.FC<BorderGlowProps> = ({
   return (
     <div
       ref={cardRef}
+      onPointerEnter={handlePointerMove}
       onPointerMove={handlePointerMove}
       className={`border-glow-card${lightSurface ? ' border-glow-card--light' : ''} ${className}`}
       style={{

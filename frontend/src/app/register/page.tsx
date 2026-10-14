@@ -291,7 +291,7 @@ export default function RegisterPage() {
               }}
             >
               <CheckCircle2 size={15} color="#38bdf8" style={{ flexShrink: 0 }} />
-              <span>Dedicated static URL: <code style={{ color: "#38bdf8", background: "rgba(56, 189, 248, 0.1)", padding: "2px 6px", borderRadius: "4px" }}>/sites/&#123;previewUsername&#125;/</code></span>
+              <span>Dedicated static URL: <code style={{ color: "#38bdf8", background: "rgba(56, 189, 248, 0.12)", padding: "2px 7px", borderRadius: "4px", fontWeight: 700, fontFamily: "var(--font-mono)" }}>/sites/{previewUsername}/</code></span>
             </div>
           </div>
         </div>
@@ -306,7 +306,7 @@ export default function RegisterPage() {
           glowRadius={36}
           glowIntensity={1.2}
           coneSpread={28}
-          animated={true}
+          animated={false}
           colors={['#c084fc', '#ec4899', '#38bdf8']}
           fillOpacity={0}
         >
