@@ -65,25 +65,23 @@ export default function LoginPage() {
           height: "100%",
           pointerEvents: "none",
           zIndex: 1,
-          opacity: 0.38,
-          maskImage: "radial-gradient(ellipse 90% 85% at 50% 50%, black 45%, rgba(0,0,0,0.35) 80%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 90% 85% at 50% 50%, black 45%, rgba(0,0,0,0.35) 80%, transparent 100%)",
+          opacity: 0.75,
         }}
       >
         <Dither
           ditherMode="bayer"
-          palette={['#02050e', '#071124', '#0e2042', '#183466', '#254d91']}
-          pixelSize={2}
-          scale={1.5}
-          waveSpeed={0.018}
-          waveFrequency={1.8}
-          waveAmplitude={0.22}
-          contrast={1.1}
-          brightness={-0.03}
+          palette={['#040816', '#0a1d3d', '#114485', '#0284c7', '#38bdf8']}
+          pixelSize={3}
+          scale={1.25}
+          waveSpeed={0.03}
+          waveFrequency={2.2}
+          waveAmplitude={0.32}
+          contrast={1.2}
+          brightness={0.01}
           mouseEffect="ripple"
-          mouseRadius={0.32}
-          mouseStrength={0.9}
-          trail={0.25}
+          mouseRadius={0.38}
+          mouseStrength={1.2}
+          trail={0.28}
           clickRipple={true}
           intro={false}
         />
@@ -119,20 +117,21 @@ export default function LoginPage() {
             style={{
               fontSize: "36px",
               fontWeight: 800,
-              color: "#ffffff",
               lineHeight: 1.15,
               letterSpacing: "-0.03em",
               marginBottom: "16px",
-              textShadow: "0 2px 24px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.9)",
             }}
           >
-            Next-Gen Multi-Tier <br />
+            <span style={{ color: "#ffffff", textShadow: "0 2px 24px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.9)" }}>
+              Next-Gen Multi-Tier
+            </span>
+            <br />
             <span
               style={{
-                background: "linear-gradient(135deg, #60a5fa 0%, #818cf8 50%, #c084fc 100%)",
+                background: "linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
-                filter: "drop-shadow(0 2px 10px rgba(96, 165, 250, 0.25))",
+                display: "inline-block",
               }}
             >
               Cloud Infrastructure.
