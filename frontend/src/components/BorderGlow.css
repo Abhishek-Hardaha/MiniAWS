@@ -176,9 +176,14 @@
 /* Ensure no unwanted scrollbars and allow outer glow on auth cards */
 .border-glow-card.auth-card {
   overflow: visible !important;
-  background: var(--card-bg, rgba(13, 20, 36, 0.82)) !important;
+  background: var(--card-bg, #0c1427) !important;
+}
+
+.border-glow-card.auth-card::after {
+  display: none !important;
 }
 
 .border-glow-card.auth-card .border-glow-inner {
   overflow: visible !important;
+  border-radius: inherit;
 }

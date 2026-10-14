@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { registerUser } from "@/lib/api";
 import BorderGlow from "@/components/BorderGlow";
+import Dither from "@/components/Dither";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -89,6 +90,37 @@ export default function RegisterPage() {
       <div className="auth-ambient-orb-1" />
       <div className="auth-ambient-orb-2" />
       <div className="auth-ambient-grid" />
+
+      {/* Interactive Dither Wave Background */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          zIndex: 1,
+          opacity: 0.95,
+        }}
+      >
+        <Dither
+          ditherMode="bayer"
+          palette={['#040714', '#0c1a36', '#173b75', '#0284c7', '#38bdf8']}
+          pixelSize={3}
+          scale={1.2}
+          waveSpeed={0.035}
+          waveFrequency={2.5}
+          waveAmplitude={0.35}
+          contrast={1.25}
+          brightness={0.02}
+          mouseEffect="ripple"
+          mouseRadius={0.4}
+          mouseStrength={1.5}
+          trail={0.3}
+          clickRipple={true}
+          intro={false}
+        />
+      </div>
 
       <div className="auth-glass-container">
         {/* Left Side: Modern Interactive Plan & Quota Showcase */}
@@ -223,13 +255,14 @@ export default function RegisterPage() {
           className="auth-card"
           edgeSensitivity={30}
           glowColor="270 90 75"
-          backgroundColor="rgba(11, 18, 34, 0.88)"
+          backgroundColor="#0c1427"
           borderRadius={28}
           glowRadius={36}
           glowIntensity={1.2}
           coneSpread={28}
           animated={true}
           colors={['#c084fc', '#ec4899', '#38bdf8']}
+          fillOpacity={0}
         >
           {/* Header */}
           <div style={{ textAlign: "center", marginBottom: "24px" }}>

@@ -65,27 +65,23 @@ export default function LoginPage() {
           height: "100%",
           pointerEvents: "none",
           zIndex: 1,
-          opacity: 0.85,
-          maskImage: "radial-gradient(ellipse 95% 90% at 50% 50%, black 60%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 95% 90% at 50% 50%, black 60%, transparent 100%)",
+          opacity: 0.95,
         }}
       >
         <Dither
-          waveColor="#38bdf8"
-          backgroundColor="#070c18"
           ditherMode="bayer"
-          colorNum={4}
+          palette={['#040714', '#0c1a36', '#173b75', '#0284c7', '#38bdf8']}
           pixelSize={3}
-          scale={1.0}
-          waveSpeed={0.04}
-          waveFrequency={3}
+          scale={1.2}
+          waveSpeed={0.035}
+          waveFrequency={2.5}
           waveAmplitude={0.35}
-          contrast={1.35}
-          brightness={0.05}
+          contrast={1.25}
+          brightness={0.02}
           mouseEffect="ripple"
           mouseRadius={0.4}
           mouseStrength={1.5}
-          trail={0.4}
+          trail={0.3}
           clickRipple={true}
           intro={false}
         />
@@ -268,13 +264,14 @@ export default function LoginPage() {
           className="auth-card"
           edgeSensitivity={30}
           glowColor="195 90 70"
-          backgroundColor="rgba(11, 18, 34, 0.88)"
+          backgroundColor="#0c1427"
           borderRadius={28}
           glowRadius={36}
           glowIntensity={1.2}
           coneSpread={28}
           animated={true}
           colors={['#38bdf8', '#818cf8', '#c084fc']}
+          fillOpacity={0}
         >
           {/* Header */}
           <div style={{ textAlign: "center", marginBottom: "26px" }}>
