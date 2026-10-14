@@ -125,17 +125,17 @@ export default function RegisterPage() {
       <div className="auth-glass-container">
         {/* Left Side: Modern Interactive Plan & Quota Showcase */}
         <div className="auth-hero-pane" style={{ paddingRight: "10px" }}>
-          {/* Top Hero Translucent Glass Box */}
+          {/* Unified Showcase Glass Card */}
           <div
             style={{
-              background: "rgba(10, 16, 32, 0.72)",
+              background: "rgba(10, 16, 32, 0.78)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
-              borderRadius: "22px",
-              padding: "24px 26px",
-              marginBottom: "20px",
-              boxShadow: "0 16px 40px -8px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.03)",
+              border: "1px solid rgba(255, 255, 255, 0.09)",
+              borderRadius: "24px",
+              padding: "26px 26px 22px 26px",
+              marginBottom: "18px",
+              boxShadow: "0 20px 50px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.03)",
             }}
           >
             {/* Cloud Badge */}
@@ -189,21 +189,15 @@ export default function RegisterPage() {
             <p style={{ color: "#cbd5e1", fontSize: "14.5px", lineHeight: 1.6, margin: 0, maxWidth: "480px" }}>
               Every account receives dedicated namespace quotas on our 3-tier AWS EC2 cloud cluster with zero setup required.
             </p>
-          </div>
 
-          {/* Interactive Included Cloud Quotas Card */}
-          <div
-            style={{
-              background: "rgba(10, 16, 32, 0.8)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "20px",
-              padding: "20px",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              marginBottom: "26px",
-              boxShadow: "0 16px 40px -8px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04)",
-            }}
-          >
+            {/* Elegant Translucent Divider between Hero & Quotas */}
+            <div
+              style={{
+                height: "1px",
+                background: "linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(192,132,252,0.2) 50%, rgba(255,255,255,0.04) 100%)",
+                margin: "22px 0 18px 0",
+              }}
+            />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", fontWeight: 700, color: "#e2e8f0" }}>
                 <Cpu size={15} color="#38bdf8" />

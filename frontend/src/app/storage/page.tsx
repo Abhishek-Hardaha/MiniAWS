@@ -27,6 +27,7 @@ import {
   CheckSquare,
   Square,
   ChevronDown,
+  ShieldCheck,
 } from "lucide-react";
 import { listFiles, uploadFile, deleteFile, getDashboardSummary } from "@/lib/api";
 

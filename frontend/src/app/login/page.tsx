@@ -90,17 +90,17 @@ export default function LoginPage() {
       <div className="auth-glass-container">
         {/* Left Side: Modern Interactive Cloud Topology Hero Showcase */}
         <div className="auth-hero-pane" style={{ paddingRight: "10px" }}>
-          {/* Top Hero Translucent Glass Box */}
+          {/* Unified Showcase Glass Card */}
           <div
             style={{
-              background: "rgba(10, 16, 32, 0.72)",
+              background: "rgba(10, 16, 32, 0.78)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
-              borderRadius: "22px",
-              padding: "24px 26px",
-              marginBottom: "20px",
-              boxShadow: "0 16px 40px -8px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.03)",
+              border: "1px solid rgba(255, 255, 255, 0.09)",
+              borderRadius: "24px",
+              padding: "26px 26px 22px 26px",
+              marginBottom: "18px",
+              boxShadow: "0 20px 50px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.03)",
             }}
           >
             {/* Cloud Badge */}
@@ -154,21 +154,15 @@ export default function LoginPage() {
             <p style={{ color: "#cbd5e1", fontSize: "14.5px", lineHeight: 1.6, margin: 0, maxWidth: "480px" }}>
               Serverless functions with sub-millisecond execution, instant static hosting with custom domains, and governed AWS EC2 clusters.
             </p>
-          </div>
 
-          {/* Interactive Live 3-Tier Multi-EC2 Topology Card */}
-          <div
-            style={{
-              background: "rgba(10, 16, 32, 0.8)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "20px",
-              padding: "20px",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              marginBottom: "28px",
-              boxShadow: "0 16px 40px -8px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04)",
-            }}
-          >
+            {/* Elegant Translucent Divider between Hero & Telemetry */}
+            <div
+              style={{
+                height: "1px",
+                background: "linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(56,189,248,0.2) 50%, rgba(255,255,255,0.04) 100%)",
+                margin: "22px 0 18px 0",
+              }}
+            />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", fontWeight: 700, color: "#e2e8f0" }}>
                 <Activity size={15} color="#34d399" />
