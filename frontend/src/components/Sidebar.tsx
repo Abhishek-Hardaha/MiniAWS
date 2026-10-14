@@ -12,7 +12,6 @@ import {
   BarChart3,
   Settings,
   HelpCircle,
-  Cloud,
   ShieldAlert
 } from "lucide-react";
 
@@ -30,13 +29,6 @@ export default function Sidebar() {
 
   return (
     <aside className="sidebar">
-      {/* Brand Logo */}
-      <Link href="/" className="sidebar-logo">
-        <div className="logo-icon-wrap">
-          <Cloud size={24} color="#60a5fa" strokeWidth={2.4} />
-        </div>
-      </Link>
-
       {/* Main Navigation */}
       <nav className="sidebar-nav">
         {NAV_ITEMS.map((item) => {
