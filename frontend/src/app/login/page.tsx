@@ -56,7 +56,7 @@ export default function LoginPage() {
       <div className="auth-ambient-orb-2" />
       <div className="auth-ambient-grid" />
 
-      {/* Subtle & Elegant Interactive Dither Background */}
+      {/* Interactive Dither Wave Background */}
       <div
         style={{
           position: "absolute",
@@ -65,29 +65,29 @@ export default function LoginPage() {
           height: "100%",
           pointerEvents: "none",
           zIndex: 1,
-          opacity: 0.28,
-          maskImage: "radial-gradient(ellipse 85% 80% at 50% 50%, black 25%, transparent 90%)",
-          WebkitMaskImage: "radial-gradient(ellipse 85% 80% at 50% 50%, black 25%, transparent 90%)",
+          opacity: 0.85,
+          maskImage: "radial-gradient(ellipse 95% 90% at 50% 50%, black 60%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 95% 90% at 50% 50%, black 60%, transparent 100%)",
         }}
       >
         <Dither
           waveColor="#38bdf8"
-          backgroundColor="transparent"
+          backgroundColor="#070c18"
           ditherMode="bayer"
           colorNum={4}
-          pixelSize={2}
-          scale={1.2}
-          waveSpeed={0.025}
-          waveFrequency={2.5}
-          waveAmplitude={0.25}
-          brightness={-0.08}
-          contrast={1.05}
+          pixelSize={3}
+          scale={1.0}
+          waveSpeed={0.04}
+          waveFrequency={3}
+          waveAmplitude={0.35}
+          contrast={1.35}
+          brightness={0.05}
           mouseEffect="ripple"
           mouseRadius={0.4}
-          mouseStrength={0.8}
-          trail={0.35}
+          mouseStrength={1.5}
+          trail={0.4}
           clickRipple={true}
-          intro={true}
+          intro={false}
         />
       </div>
 

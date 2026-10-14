@@ -287,6 +287,7 @@ const compile = (gl: WebGL2RenderingContext, type: number, source: string) => {
   gl.shaderSource(shader, source);
   gl.compileShader(shader);
   if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return shader;
+  console.error('[Dither Shader Error]:', gl.getShaderInfoLog(shader));
   gl.deleteShader(shader);
   return null;
 };
@@ -295,7 +296,10 @@ const link = (gl: WebGL2RenderingContext, fragmentSource: string) => {
   const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX);
   const fragment = compile(gl, gl.FRAGMENT_SHADER, fragmentSource);
   const program = gl.createProgram();
-  if (!vertex || !fragment || !program) return null;
+  if (!vertex || !fragment || !program) {
+    console.error('[Dither Program Error]: Vertex or fragment failed');
+    return null;
+  }
   gl.attachShader(program, vertex);
   gl.attachShader(program, fragment);
   gl.bindAttribLocation(program, 0, 'aPosition');
@@ -303,6 +307,7 @@ const link = (gl: WebGL2RenderingContext, fragmentSource: string) => {
   gl.deleteShader(vertex);
   gl.deleteShader(fragment);
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error('[Dither Link Error]:', gl.getProgramInfoLog(program));
     gl.deleteProgram(program);
     return null;
   }
@@ -578,7 +583,7 @@ const Dither: React.FC<DitherProps> = ({
         ripples.length > 0 ||
         state.presence > 0.002 ||
         trailPoints.some((point) => point.weight > 0.01);
-      if (busy && !reduce) raf = requestAnimationFrame(frame);
+      if (busy) raf = requestAnimationFrame(frame);
       else last = 0;
     };
 
@@ -588,9 +593,9 @@ const Dither: React.FC<DitherProps> = ({
 
     const resize = () => {
       const s = settingsRef.current;
-      const width = Math.max(1, container.clientWidth);
-      const height = Math.max(1, container.clientHeight);
-      const ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);
+      const width = Math.max(1, container.clientWidth || (typeof window !== 'undefined' ? window.innerWidth : 1920));
+      const height = Math.max(1, container.clientHeight || (typeof window !== 'undefined' ? window.innerHeight : 1080));
+      const ratio = Math.min(s.dpr || (typeof window !== 'undefined' ? window.devicePixelRatio : 1) || 1, 2);
       view.width = width;
       view.height = height;
       canvas.width = Math.max(1, Math.round(width * ratio));
@@ -652,6 +657,7 @@ const Dither: React.FC<DitherProps> = ({
       }
     });
     intersection.observe(container);
+    window.addEventListener('resize', resize);
     window.addEventListener('pointermove', onPointerMove, { passive: true });
     window.addEventListener('pointerdown', onPointerDown, { passive: true });
     window.addEventListener('pointerup', onPointerUp, { passive: true });
@@ -677,6 +683,7 @@ const Dither: React.FC<DitherProps> = ({
       wakeRef.current = null;
       resizeObserver.disconnect();
       intersection.disconnect();
+      window.removeEventListener('resize', resize);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointerup', onPointerUp);
