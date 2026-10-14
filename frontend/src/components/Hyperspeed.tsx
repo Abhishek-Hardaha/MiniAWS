@@ -866,7 +866,7 @@ const Hyperspeed: React.FC<HyperspeedProps> = ({
         const backdrop = transparent ? [0, 0, 0] : toRgb(s.background);
         roadUniforms.uBackground.value.fromArray(backdrop);
         roadUniforms.uTransparent.value = transparent ? 1 : 0;
-        clearColor.setRGB(...backdrop, THREE.LinearSRGBColorSpace);
+        clearColor.setRGB(backdrop[0], backdrop[1], backdrop[2], THREE.LinearSRGBColorSpace);
         clearAlpha = transparent ? 0 : 1;
       }
       if (keys.light !== s.light) {

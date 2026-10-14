@@ -108,10 +108,6 @@ export default function HomePage() {
             Your multi-tier cloud environment is active and running.<br />
             Build, deploy, monitor serverless functions and host websites.
           </p>
-          <div className="hero-interactive-hint">
-            <span className="hero-hint-pulse" />
-            Interactive Warp • Click & hold road to boost
-          </div>
         </div>
 
         {/* Hyperspeed Interactive Canvas */}
@@ -144,10 +140,6 @@ export default function HomePage() {
 
         {/* TechText Wordmark Floating Over Hyperspeed */}
         <div className="hero-techtext-overlay">
-          <div className="hero-techtext-badge">
-            <span className="hero-techtext-dot" />
-            <span>CLOUD PLATFORM</span>
-          </div>
           <div className="hero-techtext-stage">
             <TechText
               text="StackSync"

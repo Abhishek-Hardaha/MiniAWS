@@ -1387,18 +1387,128 @@ table.data-table tr:hover td {
   }
 }
 
-@keyframes glow-line-shimmer {
+/* ==========================================================================
+   Prominent Wave Animation for Storage Upload Card (Exact Image 2 Match)
+   ========================================================================== */
+.upload-prominent-waves-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 230px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.upload-waves-glow {
+  position: absolute;
+  bottom: -30px;
+  left: -10%;
+  right: -10%;
+  height: 200px;
+  background: radial-gradient(ellipse at 50% 100%, rgba(168, 85, 247, 0.5) 0%, rgba(99, 102, 241, 0.35) 45%, rgba(56, 189, 248, 0.18) 70%, transparent 85%);
+  filter: blur(28px);
+  animation: upload-glow-breathe 6s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.upload-waves-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  height: 180px;
+  pointer-events: none;
+}
+
+.wave-layer-1 {
+  animation: upload-wave-drift-1 14s ease-in-out infinite alternate;
+  opacity: 0.85;
+}
+
+.wave-layer-2 {
+  animation: upload-wave-drift-2 10s ease-in-out infinite alternate;
+  opacity: 0.75;
+}
+
+.wave-layer-3 {
+  animation: upload-wave-drift-3 16s ease-in-out infinite alternate;
+  opacity: 0.9;
+}
+
+@keyframes upload-wave-drift-1 {
   0% {
-    opacity: 0.35;
-    transform: scaleX(0.75);
+    transform: translateX(0) scaleY(1);
   }
   50% {
-    opacity: 1;
-    transform: scaleX(1.15);
+    transform: translateX(-18%) scaleY(1.08);
   }
   100% {
-    opacity: 0.55;
-    transform: scaleX(0.9);
+    transform: translateX(-35%) scaleY(0.96);
   }
+}
+
+@keyframes upload-wave-drift-2 {
+  0% {
+    transform: translateX(-30%) scaleY(0.94);
+  }
+  50% {
+    transform: translateX(-12%) scaleY(1.12);
+  }
+  100% {
+    transform: translateX(0) scaleY(1.02);
+  }
+}
+
+@keyframes upload-wave-drift-3 {
+  0% {
+    transform: translateX(-10%) scaleY(1.04);
+  }
+  50% {
+    transform: translateX(-28%) scaleY(0.92);
+  }
+  100% {
+    transform: translateX(-4%) scaleY(1.14);
+  }
+}
+
+@keyframes upload-glow-breathe {
+  0% {
+    opacity: 0.65;
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* Storage Table Row Hover & Action Menu Enhancements */
+.storage-file-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.15s ease;
+}
+
+.storage-file-row:hover {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+.storage-action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.storage-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 

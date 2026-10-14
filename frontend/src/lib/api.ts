@@ -138,16 +138,18 @@ export const createWebsite = (data: {
   subdomain: string;
   site_name: string;
   description?: string;
-  html_content: string;
+  html_content?: string;
   css_content?: string;
   js_content?: string;
+  custom_domain?: string;
+  index_html?: string;
 }) => fetchApi<any>("/api/websites/create", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(data),
 });
 export const getWebsiteSource = (siteId: string) => 
-  fetchApi<{ site_id: string; html: string; css: string; js: string }>(`/api/websites/${siteId}/source`);
+  fetchApi<{ site_id: string; html: string; css: string; js: string; index_html?: string }>(`/api/websites/${siteId}/source`);
 export const updateWebsite = (siteId: string, data: any) => 
   fetchApi<any>(`/api/websites/${siteId}/update`, {
     method: "PUT",
